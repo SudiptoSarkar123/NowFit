@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- All head content is correct -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar and Header are correct -->
+        <%- include('../layouts/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/header') %>
+                    <main class="main-content">
+                        <div class="card full-width-card">
+                            <div class="card-header">
+                                <h3>Clients Management</h3>
+                                <div class="table-controls">
+
+                                    <button class="btn-primary" id="addNewClientBtn"><i class="fa-solid fa-plus"></i> Add
+                                        New Client</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Inside client-mgt.ejs -->
+                                <table id="clientTable"> <!-- Give it a new ID -->
+                                    <thead>
+                                        <tr>
+                                            <th>Client Name</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Coach Name</th> <!-- NEW, IMPORTANT COLUMN -->
+                                            <th>Joined Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+       <!-- View/Edit Modal -->
+    <!-- CHANGE: Renamed modal IDs for clarity -->
+    <div class="modal-overlay" id="clientModalOverlay" style="display: none;">
+        <div class="modal" id="clientModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Client Details</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Add New Modal -->
+    <!-- CHANGE: Renamed modal IDs and content for clarity -->
+    <div class="modal-overlay" id="addClientModalOverlay" style="display: none;">
+        <div class="modal" id="addClientModal">
+            <div class="modal-header">
+                <h3>Add New Client</h3>
+                <button class="modal-close-btn" id="addClientCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="addClientForm">
+                    <div class="form-group"><label for="newFullName">Full Name</label><input type="text" id="newFullName" required></div>
+                    <div class="form-group"><label for="newEmail">Email</label><input type="email" id="newEmail" required></div>
+                    <div class="form-group"><label for="newPassword">Initial Password</label><input type="password" id="newPassword" required></div>
+                    <!-- CHANGE: Added dropdown to assign a coach -->
+                    <div class="form-group">
+                        <label for="assignCoach">Assign to Coach</label>
+                        <select id="assignCoach" required></select>
+                    </div>
+                    <div class="modal-footer"><button type="submit" class="btn-primary">Add Client</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Libraries are correct -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+        $(document).ready(function () {
+            // CHANGE: Updated variable names for clarity
+            const tableElement = document.getElementById('clientTable');
+            let dataTable;
+            let allClientsData = [];
+            let allCoachesData = []; // To store coaches for dropdowns
+
+            // CHANGE: Updated modal variable names
+            const modalOverlay = $('#clientModalOverlay');
+            const modalTitle = $('#modalTitle');
+            const modalBody = $('#modalBody');
+            const modalCloseBtn = $('#modalCloseBtn');
+            const addClientModalOverlay = $('#addClientModalOverlay');
+            const addClientCloseBtn = $('#addClientCloseBtn');
+
+            function showModal() { modalOverlay.addClass('show').fadeIn(200); }
+            function hideModal() { modalOverlay.removeClass('show').fadeOut(200); }
+            modalCloseBtn.on('click', hideModal);
+            modalOverlay.on('click', function (e) { if ($(e.target).is(modalOverlay)) { hideModal(); } });
+
+            function showAddClientModal() { addClientModalOverlay.addClass('show').fadeIn(200); }
+            function hideAddClientModal() { addClientModalOverlay.removeClass('show').fadeOut(200); }
+            addClientCloseBtn.on('click', hideAddClientModal);
+            addClientModalOverlay.on('click', function (e) { if ($(e.target).is(addClientModalOverlay)) { hideAddClientModal(); } });
+
+            // **NEW**: Fetch coaches to populate dropdowns
+            function loadAllCoachesForDropdowns() { 
+                $.ajax({
+                    url: '/api/admin/coaches', // Assumes this endpoint exists and works
+                    method: 'GET',
+                    success: function (response) {
+                        if (response.success && Array.isArray(response.data)) {
+                            allCoachesData = response.data;
+                            // Populate the 'Add Client' modal dropdown
+                            const assignCoachSelect = $('#assignCoach');
+                            assignCoachSelect.empty().append('<option value="">Select a coach...</option>');
+                            allCoachesData.forEach(coach => {
+                                assignCoachSelect.append(`<option value="${coach._id}">${coach.fullName}</option>`);
+                            });
+                        }
+                    }
+                });
+            }
+
+            // --- DATA LOADING & TABLE MANAGEMENT ---  
+            function loadClients() {
+                $.ajax({
+                    url: '/api/admin/clients', 
+                    method: 'GET',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        if (dataTable) { dataTable.destroy(); }
+                        $('#clientTable tbody').html(`<tr><td colspan="6">Loading...</td></tr>`); // colspan is now 6
+                    },
+                    success: function (response) {
+                        if (!response.success || !Array.isArray(response.data)) { return; }
+                        allClientsData = response.data;
+                        populateTableAndReinitialize(allClientsData);
+                    },
+                    error: function () {
+                        $('#clientTable tbody').html(`<tr><td colspan="6">Error loading data.</td></tr>`);
+                    }
+                });
+            }
+            
+            function populateTableAndReinitialize(clients) {
+                console.log(clients);
+                const tableBody = $('#clientTable tbody');
+                tableBody.empty();
+                if (clients.length > 0) {
+                    clients.forEach(client => {
+                        // CHANGE: Statuses for clients are different
+                        // const statusPill = `<span class="status-pill status-${coach.status}">${coach.status}</span>`;
+                        const statusPill = `<span class="status-pill status-${client.status}">${client.status}</span>`;
+                        const formattedDate = new Date(client.dateJoined).toLocaleDateString();
+                        // CHANGE: Accessing the populated coach name
+                        const coachName = client.coach ? client.coach.fullName : 'N/A';
+                        const actions = `<div class="action-buttons"><button class="action-btn view-btn" data-id="${client._id}"><i class="fa-solid fa-eye"></i></button><button class="action-btn edit-btn" data-id="${client._id}"><i class="fa-solid fa-pencil"></i></button><button class="action-btn block-btn" data-id="${client._id}"><i class="fa-solid fa-ban"></i></button></div>`;
+                        const row = `<tr><td>${client.fullName}</td><td>${client.email}</td><td>${statusPill}</td><td>${coachName}</td><td>${formattedDate}</td><td>${actions}</td></tr>`;
+                        tableBody.append(row);
+                    });
+                }
+                dataTable = new simpleDatatables.DataTable(tableElement, { searchable: true, labels: { placeholder: "Search clients...", noRows: "No clients found." } });
+            }
+
+            // --- EVENT LISTENERS ---
+            $('#addNewClientBtn').on('click', function () {
+                $('#addClientForm')[0].reset();
+                showAddClientModal();
+            });
+
+            $('#clientTable').on('click', '.action-btn', function () {
+                const clientId = $(this).data('id');
+                if ($(this).hasClass('view-btn')) { handleViewDetails(clientId); }
+                else if ($(this).hasClass('edit-btn')) { handleEditClient(clientId); }
+                else if ($(this).hasClass('block-btn')) { handleBlockClient(clientId); }
+            });
+
+            // --- ACTION HANDLER FUNCTIONS ---
+            function handleViewDetails(clientId) {
+                const client = allClientsData.find(c => c._id === clientId);
+                if (!client) return;
+                modalTitle.text('Client Details');
+                const detailsHtml = `<div class="details-grid">
+                    <strong>Client Name:</strong><span>${client.fullName}</span>
+                    <strong>Email:</strong><span>${client.email}</span>
+                    <strong>Status:</strong><span class="status-pill status-${client.status}">${client.status}</span>
+                    <strong>Assigned Coach:</strong><span>${client.coach?.fullName || 'N/A'}</span>
+                    <strong>Joined:</strong><span>${new Date(client.dateJoined).toLocaleDateString()}</span>
+                </div>`;
+                modalBody.html(detailsHtml);
+                showModal();
+            }
+
+            function handleEditClient(clientId) {
+                // console.log('clientId', clientId);
+                console.log('allClientsData', allClientsData);
+                const client = allClientsData.find(c => c._id === clientId);
+                if (!client) return;
+                let selectedCoachId = client.coach && client.coach._id ? client.coach._id : client.coach || '';    
+                let coachOptions = allCoachesData.map(coach => `<option value="${coach._id}" ${selectedCoachId === coach._id ? 'selected' : ''}>${coach.fullName}</option>`).join('');
+                
+                modalTitle.text('Edit Client');
+                const formHtml = `
+                    <form id="editClientForm" data-id="${clientId}">
+                        <div class="form-group"><label>Full Name</label><input type="text" id="editFullName" value="${client.fullName}"></div>
+                        <div class="form-group"><label>Status</label><select id="editStatus"><option value="active" ${client.status === 'active' ? 'selected':''}>Active</option><option value="pending" ${client.status === 'pending' ? 'selected':''}>Pending</option><option value="blocked" ${client.status === 'blocked' ? 'selected':''}>Blocked</option></select></div>
+                        <div class="form-group"><label>Re-assign Coach</label><select id="editCoach"><${coachOptions}</select></div>
+                        <div class="modal-footer"><button type="submit" class="btn-primary">Save Changes</button></div>
+                    </form>
+                `;
+                modalBody.html(formHtml);
+                showModal();
+            }
+            
+            function handleBlockClient(clientId) {
+                if (!confirm('Are you sure you want to set this client to blocked?')) return;
+                $.ajax({
+                    url: '/api/admin/clients/' + clientId + '/status', 
+                    method: 'GET',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ action: 'update_status', id: clientId, status: 'inactive' }),
+                    success: function (response) { if (response.success) {
+
+                        Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            
+                        })
+                        setTimeout(()=>{
+                            window.location.href = '/admin/client-management';
+                        },1500);
+                     } else { alert('Failed to update client.'); } },
+                    error: function (xhr) { 
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon:'error',
+                            title:'Oops...',
+                            text:errorMsg
+                        })
+                     }
+                });
+            }
+
+            // --- FORM SUBMISSION HANDLERS ---
+            $('#addClientForm').on('submit', function (e) {
+                e.preventDefault();
+                const formData = {
+                    action: 'add',
+                    fullName: $('#newFullName').val(),
+                    email: $('#newEmail').val(),
+                    password: $('#newPassword').val(),
+                    coach: $('#assignCoach').val()
+                };
+                $.ajax({
+                    url: '/api/admin/clients', // Main URL
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) { 
+                        if (response.success) {
+                         Swal.fire({
+                             icon:'success',
+                             title:'Success',
+                             text:'Client added successfully.',
+                             timer:1500,
+                             showConfirmButton:false
+                         })
+                         setTimeout(()=>{
+                             window.location.href = '/admin/client-management';
+                         },1500);
+
+                         } else { alert(response.message || 'Failed to add client.'); } },
+                    error: function (xhr) { 
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon:'error',
+                            title:'Oops...',
+                            text:errorMsg
+                        })
+                     }
+                });
+            });
+
+            $(document).on('submit', '#editClientForm', function (e) {
+                e.preventDefault();
+                const clientId = $(this).data('id');
+                const updatedData = {
+                    action: 'update',
+                    id: clientId,
+                    fullName: $('#editFullName').val(),
+                    status: $('#editStatus').val(),
+                    coach: $('#editCoach').val()
+                };
+                $.ajax({
+                    url: '/api/admin/clients/update/' + clientId,  // Main URL
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(updatedData),
+                    success: function (response) { if (response.success) { alert('Client updated successfully!'); hideModal(); loadClients(); } else { alert('Failed to update client.'); } },
+                    error: function () { alert('An error occurred.'); }
+                });
+            });
+
+            // --- INITIAL LOAD ---
+            loadAllCoachesForDropdowns();
+            loadClients();
+        });
+    </script>
+</body>
+</html>

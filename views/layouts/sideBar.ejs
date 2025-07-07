@@ -1,0 +1,68 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <i class="fa-solid fa-dumbbell logo"></i>
+        <h2>NOWFit</h2>
+    </div>
+    <ul class="sidebar-nav">
+        <!-- Dashboard is the first item -->
+        <li class="<%- title.includes('Dashboard') ? 'active' : '' %>">
+            <a href="/admin/dashboard"><i class="fa-solid fa-house icon"></i> <span>Dashboard</span></a>
+        </li>
+
+        <!-- Trainer (Coach) Management -->
+        <li class="<%- title.includes('Trainer') || title.includes('Coach') ? 'active' : '' %>">
+            <a href="/admin/trainer-management"><i class="fa-solid fa-user-tie icon"></i> <span>Trainer Management</span></a>
+        </li>
+
+        <!-- Client Management -->
+        <li class="<%- title.includes('Client') ? 'active' : '' %>">
+            <a href="/admin/client-management"><i class="fa-solid fa-users icon"></i> <span>Client Management</span></a>
+        </li>
+
+        <!-- Package Creation -->
+        <li class="<%- title.includes('Package') ? 'active' : '' %>">
+            <a href="/admin/package-management"><i class="fa-solid fa-box-open icon"></i> <span>Package Management</span></a>
+        </li>
+
+        <!-- Library Management -->
+        <li class="<%- title.includes('Library') ? 'active' : '' %>">
+            <a href="/admin/library-management"><i class="fa-solid fa-book-open icon"></i> <span>Library Management</span></a>
+        </li>
+
+        <!-- Category Management -->
+        <li class="<%- title.includes('Category') ? 'active' : '' %>">
+            <a href="/admin/category-management"><i class="fa-solid fa-sitemap icon"></i> <span>Category Management</span></a>
+        </li>
+
+        <!-- recipe Management -->
+        <li class="<%- title.includes('Recipe') ? 'active' : '' %>">
+            <a href="/admin/recipe-management"><i class="fa-solid fa-utensils icon"></i> <span>Recipe Management</span></a>
+        </li>
+
+        <!-- Enquiry Management -->
+        <li class="<%- title.includes('Enquiry') ? 'active' : '' %>">
+            <a href="/admin/enquiry-management"><i class="fa-solid fa-headset icon"></i> <span>Enquiry Management</span></a>
+        </li>
+        
+        <!-- Transaction Management -->
+        <li class="<%- title.includes('Transaction') ? 'active' : '' %>">
+            <a href="/admin/transaction-management"><i class="fa-solid fa-money-bill-transfer icon"></i> <span>Transaction Mgt.</span></a>
+        </li>
+
+
+        <!-- CMS Management -->
+        <li class="<%- title.includes('CMS') ? 'active' : '' %>">
+            <a href="/admin/cms-management"><i class="fa-solid fa-file-alt icon"></i> <span>CMS Management</span></a>
+        </li>
+        
+        <!-- Role & Permission Management -->
+        <li class="<%- title.includes('Role') ? 'active' : '' %>">
+            <a href="/admin/role-management"><i class="fa-solid fa-user-shield icon"></i> <span>Role Management</span></a>
+        </li>
+
+        <!-- Settings -->
+        <li class="<%- title.includes('Settings') ? 'active' : '' %>">
+            <a href="/admin/settings"><i class="fa-solid fa-gear icon"></i> <span>Settings</span></a>
+        </li>
+    </ul>
+</nav>

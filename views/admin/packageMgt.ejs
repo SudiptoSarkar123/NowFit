@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <!-- All CSS and library links are the same -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- <style>
+        /* All previous CSS remains the same. You can move this to your main style.css */
+        /* You may want a new style for the client list in the modal */
+        #clientListInModal {
+            list-style-type: none;
+            padding: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #clientListInModal li {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        #clientListInModal li:last-child {
+            border-bottom: none;
+        }
+    </style> -->
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/header') %>
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>Package Management</h3>
+                        <div class="table-controls">
+                            <button class="btn-primary" id="addNewPackageBtn"><i class="fa-solid fa-plus"></i> Add New Package</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="packageTable">
+                            <thead>
+                                <tr>
+                                    <th>Package Name</th>
+                                    <th>Price</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Subscribed Clients</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="packageModalOverlay" style="display: none;">
+        <div class="modal" id="packageModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Package</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- Add New Package Modal -->
+    <div class="modal-overlay" id="addPackageModalOverlay" style="display: none;">
+        <div class="modal" id="addPackageModal">
+            <div class="modal-header">
+                <h3>Add New Package</h3>
+                <button class="modal-close-btn" id="addPackageCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="addPackageForm">
+                    <div class="form-group"><label for="newPackageName">Package Name</label><input type="text" id="newPackageName" required></div>
+                    <div class="form-group"><label for="newPackagePrice">Price ($)</label><input type="number" step="0.01" id="newPackagePrice" required></div>
+                    <div class="form-group"><label for="newPackageDuration">Duration</label><select id="newPackageDuration" required><option value="">Select Duration...</option><option value="one-Time">One-Time</option><option value="monthly">Monthly</option><option value="quarterly">Quarterly</option><option value="yearly">Yearly</option></select></div>
+                    <div class="form-group"><label for="newPackageDescription">Description</label><textarea id="newPackageDescription" rows="3"></textarea></div>
+                    <div class="modal-footer"><button type="submit" class="btn-primary">Add Package</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- View Clients Modal -->
+    <div class="modal-overlay" id="viewClientsModalOverlay" style="display: none;">
+        <div class="modal" id="viewClientsModal">
+            <div class="modal-header">
+                <h3 id="viewClientsModalTitle">Clients on Package</h3>
+                <button class="modal-close-btn" id="viewClientsCloseBtn">×</button>
+            </div>
+            <div class="modal-body" id="viewClientsModalBody">
+                <!-- Client list will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+    $(document).ready(function () {
+        const tableElement = document.getElementById('packageTable');
+        let dataTable;
+        let allPackagesData = [];
+
+        // Modal elements
+        const packageModalOverlay = $('#packageModalOverlay');
+        const modalTitle = $('#modalTitle');
+        const modalBody = $('#modalBody');
+        const modalCloseBtn = $('#modalCloseBtn');
+        const addPackageModalOverlay = $('#addPackageModalOverlay');
+        const addPackageCloseBtn = $('#addPackageCloseBtn');
+        const viewClientsModalOverlay = $('#viewClientsModalOverlay');
+        const viewClientsCloseBtn = $('#viewClientsCloseBtn');
+        
+        // Modal control functions
+        function showPackageModal() { packageModalOverlay.addClass('show').fadeIn(200); }
+        function hidePackageModal() { packageModalOverlay.removeClass('show').fadeOut(200); }
+        modalCloseBtn.on('click', hidePackageModal);
+        packageModalOverlay.on('click', function(e) { if ($(e.target).is(packageModalOverlay)) { hidePackageModal(); }});
+
+        function showAddPackageModal() { addPackageModalOverlay.addClass('show').fadeIn(200); }
+        function hideAddPackageModal() { addPackageModalOverlay.removeClass('show').fadeOut(200); }
+        addPackageCloseBtn.on('click', hideAddPackageModal);
+        addPackageModalOverlay.on('click', function(e) { if ($(e.target).is(addPackageModalOverlay)) { hideAddPackageModal(); }});
+
+        function showViewClientsModal() { viewClientsModalOverlay.addClass('show').fadeIn(200); }
+        function hideViewClientsModal() { viewClientsModalOverlay.removeClass('show').fadeOut(200); }
+        viewClientsCloseBtn.on('click', hideViewClientsModal);
+        viewClientsModalOverlay.on('click', function(e) { if ($(e.target).is(viewClientsModalOverlay)) { hideViewClientsModal(); }});
+
+        // "Destroy and rebuild" logic
+        function loadPackages() {
+            $.ajax({
+                url: '/api/admin/packages',
+                method: 'GET',
+                dataType: 'json',
+                beforeSend: function () {
+                    if (dataTable) { dataTable.destroy(); }
+                    $('#packageTable tbody').html(`<tr><td colspan="6">Loading...</td></tr>`);
+                },
+                success: function (response) {
+                    if (!response.success || !Array.isArray(response.data)) { return; }
+                    allPackagesData = response.data;
+                    populateTableAndReinitialize(allPackagesData);
+                },
+                error: function () {
+                    $('#packageTable tbody').html(`<tr><td colspan="6" style="color: red;">Error loading data.</td></tr>`);
+                }
+            });
+        }
+        
+        function populateTableAndReinitialize(packages) {
+            const tableBody = $('#packageTable tbody');
+            tableBody.empty();
+            packages.forEach(pkg => {
+                const statusPill = `<span class="status-pill status-${pkg.status || ''}">${pkg.status || 'inactive'}</span>`;
+                const formattedPrice = `$${Number(pkg.price).toFixed(2)}`;
+                const actions = `
+                    <div class="action-buttons">
+                        <button class="action-btn view-clients-btn" title="View Clients" data-id="${pkg._id}" data-name="${pkg.name}"><i class="fa-solid fa-users"></i></button>
+                        <button class="action-btn edit-btn" title="Edit Package" data-id="${pkg._id}"><i class="fa-solid fa-pencil"></i></button>
+                        <button class="action-btn block-btn" title="Block/Unblock" data-id="${pkg._id}" data-status="${pkg.status}"><i class="fa-solid fa-ban"></i></button>
+                    </div>
+                `;
+                const row = `<tr><td>${pkg.name}</td><td>${formattedPrice}</td><td>${pkg.duration}</td><td>${statusPill}</td><td>${pkg.clientCount || 0}</td><td>${actions}</td></tr>`;
+                tableBody.append(row);
+            });
+            dataTable = new simpleDatatables.DataTable(tableElement, { searchable: true, labels: { placeholder: "Search packages..." } });
+        }
+
+        // --- Event Listeners ---
+        $('#addNewPackageBtn').on('click', function() {
+            $('#addPackageForm')[0].reset();
+            showAddPackageModal();
+        });
+
+        $('#packageTable').on('click', '.action-btn', function () {
+            const packageId = $(this).data('id');
+            if ($(this).hasClass('edit-btn')) {
+                handleEditPackage(packageId);
+            } else if ($(this).hasClass('block-btn')) {
+                const currentStatus = $(this).data('status');
+                handleBlockPackage(packageId, currentStatus);
+            } else if ($(this).hasClass('view-clients-btn')) {
+                const packageName = $(this).data('name');
+                handleViewClients(packageId, packageName);
+            }
+        });
+
+        // --- Action Handler Functions ---
+        function handleViewClients(packageId, packageName) {
+            $('#viewClientsModalTitle').text(`Clients on "${packageName}"`);
+            const clientBody = $('#viewClientsModalBody');
+            clientBody.html('<p>Loading clients...</p>');
+            showViewClientsModal();
+
+            $.ajax({
+                url: '/admin/packages',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'get_clients', id: packageId }),
+                success: function(response) {
+                    if (response.success && Array.isArray(response.data)) {
+                        if (response.data.length === 0) {
+                            clientBody.html('<p>No clients are currently subscribed to this package.</p>');
+                            return;
+                        }
+                        let clientListHtml = '<ul id="clientListInModal">';
+                        response.data.forEach(client => {
+                            clientListHtml += `<li>${client.fullName} (${client.email})</li>`;
+                        });
+                        clientListHtml += '</ul>';
+                        clientBody.html(clientListHtml);
+                    } else {
+                        clientBody.html('<p style="color:red;">Could not load clients.</p>');
+                    }
+                },
+                error: function() {
+                     clientBody.html('<p style="color:red;">An error occurred.</p>');
+                }
+            });
+        }
+        
+        function handleEditPackage(packageId) {
+            const pkg = allPackagesData.find(p => p._id === packageId);
+            if (!pkg) return;
+            
+            modalTitle.text('Edit Package');
+            const formHtml = `
+                <form id="editPackageForm" data-id="${packageId}">
+                    <div class="form-group"><label>Package Name</label><input type="text" id="editPackageName" value="${pkg.name}" required></div>
+                    <div class="form-group"><label>Price ($)</label><input type="number" step="0.01" id="editPackagePrice" value="${pkg.price}" required></div>
+                    <div class="form-group"><label>Duration</label><select id="editPackageDuration" required>
+                        <option value="One-Time" ${pkg.duration === 'one-Time' ? 'selected' : ''}>One-Time</option>
+                        <option value="Monthly" ${pkg.duration === 'monthly' ? 'selected' : ''}>Monthly</option>
+                        <option value="Quarterly" ${pkg.duration === 'quarterly' ? 'selected' : ''}>Quarterly</option>
+                        <option value="Yearly" ${pkg.duration === 'yearly' ? 'selected' : ''}>Yearly</option>
+                    </select></div>
+                    <div class="form-group"><label>Status</label><select id="editPackageStatus" required>
+                        <option value="active" ${pkg.status === 'active' ? 'selected' : ''}>Active</option>
+                        <option value="inactive" ${pkg.status === 'inactive' ? 'selected' : ''}>Inactive</option>
+                    </select></div>
+                    <div class="form-group"><label>Description</label><textarea id="editPackageDescription" rows="3">${pkg.description || ''}</textarea></div>
+                    <div class="modal-footer"><button type="submit" class="btn-primary">Save Changes</button></div>
+                </form>
+            `;
+            modalBody.html(formHtml);
+            showPackageModal();
+        }
+
+        function handleBlockPackage(packageId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const actionText = newStatus === 'inactive' ? 'block' : 'unblock';
+
+            if (!confirm(`Are you sure you want to ${actionText} this package?`)) return;
+
+            $.ajax({
+                url: '/api/admin/packages/inactive/' + packageId ,
+                method: 'GET',
+                // contentType: 'application/json',
+                // data: JSON.stringify({ action: 'update_status', id: packageId, status: newStatus }),
+                success: function (response) {
+
+                     Swal.fire({
+                    icon:'success',
+                    title:'Success',
+                    text:response.message,
+                    timer:1500,
+                    showConfirmButton:false
+                  });
+                  setTimeout(()=>{
+                    window.location.href = '/admin/package-management';
+                  },1500);
+
+                    // if (response.success) { alert(`Package ${actionText}ed successfully!`); loadPackages(); } 
+                    // else { alert(`Failed to ${actionText} package.`); }
+                },
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+
+                       Swal.fire({
+                    icon:'error',
+                    title:'Oops...',
+                    text:errorMsg
+                   })  
+                    //  alert('An error occurred.');
+                     }
+            });
+        }
+        
+        // --- Form Submission Handlers ---
+        $('#addPackageForm').on('submit', function (e) {
+            e.preventDefault();
+            const formData = {
+                action: 'add',
+                name: $('#newPackageName').val(),
+                price: $('#newPackagePrice').val(),
+                duration: $('#newPackageDuration').val(),
+                description: $('#newPackageDescription').val(),
+                
+            };
+            $.ajax({
+                url: '/api/admin/packages/add',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    if (response.success) { alert('Package added successfully!'); hideAddPackageModal(); loadPackages(); } 
+                    else { alert(response.message || 'Failed to add package.'); }
+                },
+                error: function () { alert('Error adding package.'); }
+            });
+        });
+
+        $(document).on('submit', '#editPackageForm', function (e) {
+            e.preventDefault();
+            const packageId = $(this).data('id');
+            const updatedData = {
+                action: 'update',
+                id: packageId,
+                name: $('#editPackageName').val(),
+                price: $('#editPackagePrice').val(),
+                duration: $('#editPackageDuration').val(),
+                description: $('#editPackageDescription').val(),
+                status:$('#editPackageStatus').val()
+            };
+            $.ajax({
+                url: '/api/admin/packages/update/' + packageId,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(updatedData),
+                success: function (response) {
+                    if (response.success) { 
+                        Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            timer:1500,
+                            showConfirmButton:false
+                          });
+                          setTimeout(()=>{
+                            window.location.href = '/admin/package-management';
+                          },1500);
+                        // alert('Package updated successfully!'); hidePackageModal(); loadPackages(); 
+                    } 
+                    else { 
+                        alert('Failed to update package.');
+                     }
+                },
+                error: function (xhr) { 
+
+                     const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+
+                       Swal.fire({
+                    icon:'error',
+                    title:'Oops...',
+                    text:errorMsg
+                   })  
+                   
+                    // alert('An error occurred.'); 
+                }
+            });
+        });
+
+        // --- Initial Load ---
+        loadPackages();
+    });
+    </script>
+</body>
+</html>

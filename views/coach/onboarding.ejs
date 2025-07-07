@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOWFit - Onboarding</title>
+
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <style>
+        /* --- CORE DESIGN --- */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --light-bg: #f3f4f6;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --card-bg: #ffffff;
+            --white: #ffffff;
+            --success: #10b981;
+            --border-color: #e5e7eb;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- Auth/Onboarding Card --- */
+        .flow-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 500px;
+            overflow: hidden;
+        }
+
+        .flow-header {
+            text-align: center;
+            padding: 40px 40px 20px;
+        }
+
+        .flow-header .logo {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .flow-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .flow-header p {
+            color: var(--text-light);
+        }
+
+        .flow-body {
+            padding: 30px 40px;
+        }
+
+        /* --- Form Elements --- */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* --- Onboarding Specific --- */
+        .progress-bar-container {
+            padding: 0 40px;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--light-bg);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-inner {
+            height: 100%;
+            width: 0%;
+            background-color: var(--success);
+            transition: width 0.4s ease-in-out;
+        }
+
+        .onboarding-step {
+            display: none;
+        }
+
+        .onboarding-step.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .onboarding-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            background: none;
+            color: var(--text-light);
+            width: auto;
+            padding: 10px 0;
+        }
+
+        #errorMessage {
+            color: #ef4444;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="flow-card">
+        <div id="onboardingPage" style="display: block;">
+            <div class="flow-header">
+                <div class="logo"><i class="fa-solid fa-rocket"></i></div>
+                <h1>Let's Get You Set Up!</h1>
+                <p>A few quick questions to personalize your experience.</p>
+            </div>
+
+            <!-- Onboarding Progress Bar -->
+            <div class="progress-bar-container">
+                <div class="progress-bar">
+                    <div class="progress-bar-inner" id="onboardingProgress"></div>
+                </div>
+            </div>
+
+            <div class="flow-body">
+                <form id="onboardingForm">
+                    <div id="errorMessage"></div>
+                    <!-- Step 1: Coach Type -->
+                    <div class="onboarding-step active" data-step="1">
+                        <div class="form-group">
+                            <label>What type of coach are you?</label>
+                            <select name="coachType">
+                                <option value="Personal Coach">Personal Trainer</option>
+                                <option value="Gym Manager">Gym Manager</option>
+                                <option value="Nutritionist">Nutritionist</option>
+                                <option value="Other">Other..</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Step 2: Workplace -->
+                    <div class="onboarding-step" data-step="2">
+                        <div class="form-group">
+                            <label>Where do you primarily work?</label>
+                            <select name="workplace">
+                                <option value="Gym">Gym-based</option>
+                                <option value="Online Only">Online Only</option>
+                                <option value="Home-based">Home-based / Mobile</option>
+                                <option value="Corporate Training">Corporate Training</option>
+                                <option value="Other">Other..</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Step 3: Client Count -->
+                    <div class="onboarding-step" data-step="3">
+                        <div class="form-group">
+                            <label>How many active clients do you have?</label>
+                            <input type="number" name="clientCount" min="0" placeholder="Enter number of active clients" required>
+                        </div>
+                    </div>
+                    <!-- Step 4: Add First Client -->
+                    <div class="onboarding-step" data-step="4">
+                        <div class="form-group">
+                            <label>Onboard Your First Client (Optional)</label>
+                            <p style="color:var(--text-light); font-size: 0.9rem; margin-bottom: 20px;">Get a head start
+                                by adding a client now. We'll send them an invite.</p>
+                            <input type="text" name="clientName" placeholder="Client's Full Name"
+                                style="margin-bottom: 15px;">
+                            <input type="email" name="clientEmail" placeholder="Client's Email Address">
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="onboarding-nav">
+                        <button type="button" class="btn btn-secondary" id="prevBtn" style="display: none;">←
+                            Back</button>
+                        <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            let currentStep = 1;
+            const totalSteps = $('.onboarding-step').length;
+            const nextBtn = $('#nextBtn');
+            const prevBtn = $('#prevBtn');
+            const errorDiv = $('#errorMessage');
+
+            function goToStep(step) {
+                currentStep = step;
+                $('.onboarding-step').removeClass('active');
+                $(`.onboarding-step[data-step="${currentStep}"]`).addClass('active');
+
+                const progress = ((currentStep - 1) / totalSteps) * 100;
+                $('#onboardingProgress').css('width', progress + '%');
+
+                prevBtn.toggle(currentStep > 1);
+                nextBtn.text(currentStep === totalSteps ? 'Finish & Go to Dashboard' : 'Next');
+                errorDiv.hide();
+            }
+
+            function saveCurrentStepData(callback) {
+                nextBtn.prop('disabled', true).text('Saving...');
+                errorDiv.hide();
+
+                let dataToSend = {};
+                let apiUrl = '/auth/coach/onboarding/update-profile';
+
+                const currentStepElement = $(`.onboarding-step[data-step="${currentStep}"]`);
+                const inputs = currentStepElement.find('input, select');
+                let hasData = false;
+
+                if (currentStep < 4) { // Profile update steps
+                    const input = inputs.first();
+                    dataToSend[input.attr('name')] = input.val();
+                    hasData = true;
+                } else { // Final step, add client
+                    apiUrl = '/auth/coach/onboarding/add-client';
+                    dataToSend['clientName'] = $('input[name="clientName"]').val();
+                    dataToSend['clientEmail'] = $('input[name="clientEmail"]').val();
+                    // This step is optional, so only set hasData if email is provided
+                    if (dataToSend.clientEmail) {
+                        hasData = true;
+                    }
+                }
+
+                if (!hasData) {
+                    nextBtn.prop('disabled', false);
+                    callback(true); // Nothing to save, just proceed
+                    return;
+                }
+
+                $.ajax({
+                    url: apiUrl,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(dataToSend),
+                    success: function (response) {  
+                        if (response.success) {
+                            callback(true, response);
+                        } else {
+                            errorDiv.text(response.message || 'An error occurred.').show();
+                            callback(false);
+                        }
+                    },
+                    error: function (xhr) {
+                        const serverMessage = xhr.responseJSON?.message || 'Could not save data. Please try again.';
+                        errorDiv.text(serverMessage).show();
+                        callback(false);
+                    }
+                }).always(function () {
+                    // Re-enable the button after the call is complete
+                    nextBtn.prop('disabled', false);
+                    nextBtn.text(currentStep === totalSteps ? 'Finish & Go to Dashboard' : 'Next');
+                });
+            }
+
+            nextBtn.on('click', function () {
+                saveCurrentStepData(function (success, response) {
+                    if (success) {
+                        if (currentStep < totalSteps) {
+                            goToStep(currentStep + 1);
+                        } else {
+                            // This was the final step
+                            if (response && response.redirectUrl) {
+                                Swal.fire({
+                                    icon:'success',
+                                    title:'Success',
+                                    text:response.message,
+                                    timer:1500,
+                                    showConfirmButton:false
+                                })
+                                setTimeout(()=>{
+                                    window.location.href = response.redirectUrl;
+                                },1500);
+                                
+                            } else {
+                                // Handle case where client wasn't added but we can still proceed
+                                window.location.href = '/dashboard';
+                            }
+                        }
+                    }
+                    // If not successful, an error message is already shown.
+                });
+            });
+
+            prevBtn.on('click', function () {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+
+            goToStep(1); // Initialize the view to the first step
+        });
+    </script>
+
+</body>
+
+</html>

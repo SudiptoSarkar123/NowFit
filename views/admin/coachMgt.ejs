@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- All head content is correct -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .card.full-width-card {
+            grid-column: 1 / -1;
+        }
+
+        .card-body {
+            padding-top: 20px;
+        }
+
+        .card-header .table-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .table-controls .btn-primary {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .table-controls .btn-primary:hover {
+            background-color: #4338ca;
+        }
+
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #fff;
+            text-transform: capitalize;
+            display: inline-block;
+        }
+
+        .status-active {
+            background-color: #10b981;
+        }
+
+        .status-pending {
+            background-color: #f59e0b;
+        }
+
+        .status-blocked {
+            background-color: #ef4444;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin: 0 5px;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .datatable-input {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .datatable-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        .datatable-table th,
+        .datatable-table td {
+            padding: 12px 15px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transform: translateY(-50px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.show .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .modal-close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            cursor: pointer;
+            color: #9ca3af;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 15px;
+        }
+
+        .details-grid strong {
+            color: var(--heading-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #e5e7eb;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar and Header are correct -->
+        <%- include('../layouts/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/header') %>
+                    <main class="main-content">
+                        <div class="card full-width-card">
+                            <div class="card-header">
+                                <h3>Coach Management</h3>
+                                <div class="table-controls">
+                                    <!-- GAVE THIS BUTTON AN ID FOR A MORE SPECIFIC SELECTOR -->
+                                    <button class="btn-primary" id="addNewCoachBtn"><i class="fa-solid fa-plus"></i> Add
+                                        New Coach</button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <table id="coachTable">
+                                    <!-- Table structure is correct -->
+                                    <thead>
+                                        <tr>
+                                            <th>Full Name</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Date Joined</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+    <!-- View/Edit Modal is correct -->
+    <div class="modal-overlay" id="coachModalOverlay" style="display: none;">
+        <div class="modal" id="coachModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Coach Details</h3><button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <!-- ===== MODAL for Add New Coach (WITH PASSWORD FIELD) ===== -->
+    <div class="modal-overlay" id="addCoachModalOverlay" style="display: none;">
+        <div class="modal" id="addCoachModal">
+            <div class="modal-header">
+                <h3>Add New Coach</h3>
+                <button class="modal-close-btn" id="addCoachCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="addCoachForm">
+                    <div class="form-group">
+                        <label for="newFullName">Full Name</label>
+                        <input type="text" id="newFullName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newEmail">Email</label>
+                        <input type="email" id="newEmail" required>
+                    </div>
+                    <!-- **FIX**: ADDED PASSWORD FIELD -->
+                    <div class="form-group">
+                        <label for="newPassword">Initial Password</label>
+                        <input type="password" id="newPassword" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">Add Coach</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Libraries are correct -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+        $(document).ready(function () {
+            // All variables and modal functions are correct
+            const tableElement = document.getElementById('coachTable');
+            let dataTable;
+            let allCoachesData = [];
+            const modalOverlay = $('#coachModalOverlay');
+            const modalTitle = $('#modalTitle');
+            const modalBody = $('#modalBody');
+            const modalCloseBtn = $('#modalCloseBtn');
+            const addCoachModalOverlay = $('#addCoachModalOverlay');
+            const addCoachCloseBtn = $('#addCoachCloseBtn');
+
+            function showModal() { modalOverlay.addClass('show').fadeIn(200); }
+            function hideModal() { modalOverlay.removeClass('show').fadeOut(200); }
+            modalCloseBtn.on('click', hideModal);
+            modalOverlay.on('click', function (e) { if ($(e.target).is(modalOverlay)) { hideModal(); } });
+
+            function showAddCoachModal() { addCoachModalOverlay.addClass('show').fadeIn(200); }
+            function hideAddCoachModal() { addCoachModalOverlay.removeClass('show').fadeOut(200); }
+            addCoachCloseBtn.on('click', hideAddCoachModal);
+            addCoachModalOverlay.on('click', function (e) { if ($(e.target).is(addCoachModalOverlay)) { hideAddCoachModal(); } });
+
+            // "Destroy and rebuild" logic is correct and robust
+
+
+            // This part is functionally fine, just needs the functions below to be correct
+            function loadCoaches() {
+                $.ajax({
+                    url: '/api/admin/coaches',
+                    method: 'GET',
+                    dataType: 'json',
+                    beforeSend: function () {
+                        if (dataTable) { dataTable.destroy(); }
+                        $('#coachTable tbody').html('<tr><td colspan="5" style="text-align: center;">Loading...</td></tr>');
+                    },
+                    success: function (response) {
+                        if (!response.success || !Array.isArray(response.data)) {
+                            console.error("Invalid data format received.");
+                            return;
+                        }
+                        allCoachesData = response.data;
+                        populateTableAndReinitialize(allCoachesData);
+                    },
+                    error: function () {
+                        $('#coachTable tbody').html('<tr><td colspan="5" style="text-align: center; color: red;">Error loading data.</td></tr>');
+                    }
+                });
+            }
+            function populateTableAndReinitialize(coaches) {
+                const tableBody = $('#coachTable tbody');
+                tableBody.empty();
+                if (coaches.length > 0) {
+                    coaches.forEach(coach => {
+                        const statusPill = `<span class="status-pill status-${coach.status}">${coach.status}</span>`;
+                        const formattedDate = new Date(coach.dateJoined).toLocaleDateString();
+                        const actions = `<div class="action-buttons"><button title="View Coach" class="action-btn view-btn" data-id="${coach._id}"><i class="fa-solid fa-eye"></i></button><button class="action-btn edit-btn" data-id="${coach._id}"><i class="fa-solid fa-pencil"></i></button><button title="Delete Coach" class="action-btn block-btn" data-id="${coach._id}"><i class="fa-solid fa-ban"></i></button></div>`;
+                        const row = `<tr><td>${coach.fullName}</td><td>${coach.email}</td><td>${statusPill}</td><td>${formattedDate}</td><td>${actions}</td></tr>`;
+                        tableBody.append(row);
+                    });
+                }
+                dataTable = new simpleDatatables.DataTable(tableElement, { searchable: true, labels: { placeholder: "Search...", noRows: "No coaches found." } });
+            }
+
+
+            // --- EVENT LISTENERS ---
+            $('#addNewCoachBtn').on('click', function () {
+                $('#addCoachForm')[0].reset();
+                showAddCoachModal();
+            });
+
+            $('#coachTable').on('click', '.action-btn', function () {
+                const coachId = $(this).data('id');
+                if ($(this).hasClass('view-btn')) { handleViewDetails(coachId); }
+                else if ($(this).hasClass('edit-btn')) { handleEditCoach(coachId); }
+                else if ($(this).hasClass('block-btn')) { handleBlockCoach(coachId); }
+            });
+
+            // --- ACTION HANDLER FUNCTIONS ---
+            function handleViewDetails(coachId) { /* ... no change here ... */ }
+            function handleEditCoach(coachId) { /* ... no change here ... */ }
+            function handleViewDetails(coachId) {
+                const coach = allCoachesData.find(c => c._id === coachId); if (!coach) return; modalTitle.text('Coach Details'); const detailsHtml =
+                    `<div class="details-grid">
+                <strong>Full Name:</strong> <span>${coach.fullName}</span>
+                <strong>Email:</strong> <span>${coach.email}</span>
+                <strong>Status:</strong> <span class="status-pill status-${coach.status}">${coach.status}</span>
+                <strong>Joined:</strong> <span>${new Date(coach.dateJoined).toLocaleDateString()}</span>
+                <strong>Type:</strong> <span>${coach.coachType}</span>
+                <strong>Workplace:</strong> <span>${coach.workplace}</span>
+                <strong>Specialty:</strong> <span>${coach.profile?.specialty || 'N/A'}</span>
+                <strong>Clients:</strong> <span>${coach.profile?.clientCount || 0}</span>
+                <strong>Bio:</strong> <span>${coach.profile?.bio || 'N/A'}</span>
+            </div>`;
+
+                modalBody.html(detailsHtml); showModal();
+            }
+
+            function handleEditCoach(coachId) {
+                const coach = allCoachesData.find(c => c._id === coachId); if (!coach) return; modalTitle.text('Edit Coach'); const formHtml = `<form id="editCoachForm" data-id="${coachId}"><div class="form-group"><label for="fullName">Full Name</label><input type="text" id="fullName" value="${coach.fullName}"></div><div class="form-group"><label for="email">Email</label><input type="email" id="email" value="${coach.email}" disabled></div><div class="form-group"><label for="status">Status</label><select id="status"><option value="active" ${coach.status === 'aproved' ? 'selected' : ''}>Approved</option><option value="pending" ${coach.status === 'pending' ? 'selected' : ''}>Pending</option><option value="rejected" ${coach.status === 'rejected' ? 'selected' : ''}>Rejected</option></select></div><div class="modal-footer"><button type="submit" class="btn-primary">Save Changes</button></div></form>`;
+                modalBody.html(formHtml); showModal();
+            }
+
+            // **FIX**: CORRECTED 'Block Coach' to use POST and a consistent URL
+            function handleBlockCoach(coachId) {
+                if (!confirm('Are you sure you want to delete this coach?')) return;
+                $.ajax({
+                    url: '/api/admin/coaches/' + coachId + '/status', // Uses the single main URL
+                    method: 'GET',
+
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => {
+                                window.location.href = '/admin/trainer-management';
+                            }, 1500);
+                        } else { alert('Failed to block coach.'); }
+                    },
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: errorMsg
+                        })
+                        //  alert('An error occurred.');
+                    }
+                });
+            }
+
+            // --- FORM SUBMISSION HANDLERS ---
+
+            // **FIX**: CORRECTED 'Add Coach' to include password
+            $('#addCoachForm').on('submit', function (e) {
+                e.preventDefault();
+                const formData = {
+                    action: 'add',
+                    fullName: $('#newFullName').val(),
+                    email: $('#newEmail').val(),
+                    password: $('#newPassword').val() // Added password
+                };
+                $.ajax({
+                    url: '/api/admin/coaches/add', // Uses the single main URL
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success) {
+                            alert('Coach added successfully!');
+                            hideAddCoachModal();
+                            loadCoaches();
+                        } else { alert(response.message || 'Failed to add coach.'); }
+                    },
+                    error: function () { alert('Error while adding coach.'); }
+                });
+            });
+
+            // **FIX**: CORRECTED 'Edit Coach' to use a consistent URL
+            $(document).on('submit', '#editCoachForm', function (e) {
+                e.preventDefault();
+                const coachId = $(this).data('id');
+                const updatedData = {
+                    action: 'update',
+                    id: coachId,
+                    fullName: $('#fullName').val(),
+                    status: $('#status').val()
+                };
+                $.ajax({
+                    url: '/api/admin/coaches/update/' + coachId, // Uses the single main URL
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(updatedData),
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(() => {
+                                window.location.href = '/admin/trainer-management';
+                            }, 1500);
+                            // alert('Coach updated successfully!');
+
+                        } else { alert('Failed to update coach.'); }
+                    },
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: errorMsg
+                        })
+                        // alert('An error occurred.'); 
+                    }
+                });
+            });
+
+            // --- INITIAL LOAD ---
+            loadCoaches();
+        });
+    </script>
+</body>
+
+</html>

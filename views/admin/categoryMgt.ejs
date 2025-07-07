@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <!-- All CSS and library links -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style> /* Your standard styles are fine here */ </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/header') %>
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>Category Management</h3>
+                        <div class="table-controls">
+                            <button class="btn-primary" id="addNewCategoryBtn"><i class="fa-solid fa-plus"></i> Add New Category</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="categoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Category Name</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="categoryModalOverlay" style="display: none;">
+        <div class="modal" id="categoryModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add Category</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <!-- Hidden input to store ID for editing -->
+                    <input type="hidden" id="categoryId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="categoryName">Category Name</label>
+                        <input type="text" id="categoryName" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="categoryType">Category Type</label>
+                        <select id="categoryType" name="type" required>
+                            <option value="">Select a type...</option>
+                            <option value="Exercise">Exercise</option>
+                            <option value="Recipe">Recipe</option>
+                            <option value="Resource">Resource</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoryDescription">Description (Optional)</label>
+                        <textarea id="categoryDescription" name="description" rows="3"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">Save Category</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+    $(document).ready(function () {
+        const tableElement = document.getElementById('categoryTable');
+        let dataTable;
+        let allCategoriesData = [];
+
+        // Modal elements
+        const modalOverlay = $('#categoryModalOverlay');
+        const modalTitle = $('#modalTitle');
+        const modalCloseBtn = $('#modalCloseBtn');
+        const categoryForm = $('#categoryForm');
+        
+        function showModal() { modalOverlay.addClass('show').fadeIn(200); }
+        function hideModal() { modalOverlay.removeClass('show').fadeOut(200); }
+        modalCloseBtn.on('click', hideModal);
+        modalOverlay.on('click', function(e) { if ($(e.target).is(modalOverlay)) { hideModal(); }});
+
+        // Function to load categories
+        function loadCategories() {
+            $.ajax({
+                url: '/api/admin/categories',
+                method: 'GET',
+                dataType: 'json',
+                beforeSend: function () {
+                    if (dataTable) dataTable.destroy();
+                    $('#categoryTable tbody').html(`<tr><td colspan="4">Loading categories...</td></tr>`);
+                },
+                success: function (response) {
+                    if (!response.success || !Array.isArray(response.data)) { return; }
+                    allCategoriesData = response.data;
+                    populateTableAndReinitialize(allCategoriesData);
+                },
+                error: function () {
+                    $('#categoryTable tbody').html(`<tr><td colspan="4" style="color:red;">Error loading data.</td></tr>`);
+                }
+            });
+        }
+        // Function to populate the table
+        function populateTableAndReinitialize(categories) {
+            const tableBody = $('#categoryTable tbody');
+            tableBody.empty();
+            categories.forEach(category => {
+                const statusPill = `<span class="status-pill status-${category.status}">${category.status}</span>`;
+                const actions = `
+                    <div class="action-buttons">
+                        <button class="action-btn edit-btn" title="Edit" data-id="${category._id}"><i class="fa-solid fa-pencil"></i></button>
+                        <button class="action-btn block-btn" title="Toggle Status" data-id="${category._id}" data-status="${category.status}"><i class="fa-solid fa-ban"></i></button>
+                    </div>
+                `;
+                const row = `<tr>
+                                <td>${category.name}</td>
+                                <td>${category.type}</td>
+                                <td>${statusPill}</td>
+                                <td>${actions}</td>
+                             </tr>`;
+                tableBody.append(row);
+            });
+            dataTable = new simpleDatatables.DataTable(tableElement, { searchable: true, labels: { placeholder: "Search categories..." } });
+        }
+        
+        // --- Event Listeners ---
+        $('#addNewCategoryBtn').on('click', handleAddCategory);
+        //  Unified event listener for actions
+        $('#categoryTable').on('click', '.action-btn', function () {
+            const categoryId = $(this).data('id');
+            if ($(this).hasClass('edit-btn')) {
+                handleEditCategory(categoryId);
+            } else if ($(this).hasClass('block-btn')) {
+                const currentStatus = $(this).data('status');
+                handleToggleStatus(categoryId, currentStatus);
+            }
+        });
+
+        categoryForm.on('submit', handleFormSubmit);
+        
+        // --- Action Handlers ---
+        function handleAddCategory() {
+            categoryForm[0].reset();
+            $('#categoryId').val(''); // Ensure ID is empty for "add" action
+            modalTitle.text('Add New Category');
+            showModal();
+        }
+        // Edit category
+        function handleEditCategory(categoryId) {
+            const category = allCategoriesData.find(c => c._id === categoryId);
+            if (!category) return;
+            
+            categoryForm[0].reset();
+            modalTitle.text('Edit Category');
+            
+            $('#categoryId').val(category._id);
+            $('#categoryName').val(category.name);
+            $('#categoryType').val(category.type);
+            $('#categoryDescription').val(category.description);
+            
+            showModal();
+        }
+        // Toggle category status
+        function handleToggleStatus(categoryId, currentStatus) {
+            const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+            const actionText = newStatus === 'inactive' ? 'block' : 'unblock';
+            if (!confirm(`Are you sure you want to ${actionText} this category?`)) return;
+            
+            $.ajax({
+                url: '/api/admin/categories',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'update_status', id: categoryId, status: newStatus }),
+                success: function (response) { if (response.success) { 
+                    Swal.fire({
+                        icon:'success',
+                        title:'Success',
+                        text:response.message,
+                        timer:1500,
+                        showConfirmButton:false
+                      });
+                      setTimeout(()=>{
+                        window.location.href = '/admin/category-management';
+                      },1500);
+                 } else { alert('Action failed.'); } },
+                error: function (xhr) { 
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                 }
+            });
+        }
+        
+        // --- Single Form Submission Handler ---
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const categoryId = $('#categoryId').val();
+            const action = categoryId ? 'update' : 'add';
+            
+            const formData = {
+                action: action,
+                id: categoryId,
+                name: $('#categoryName').val(),
+                type: $('#categoryType').val(),
+                description: $('#categoryDescription').val(),
+            };
+            
+            $.ajax({
+                url: '/api/admin/categories',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    if (response.success) {
+                       Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            timer:1500,
+                            showConfirmButton:false
+                          });
+                          setTimeout(()=>{
+                            window.location.href = '/admin/category-management';
+                          },1500);
+                    } else {
+                        alert('Operation failed: ' + (response.message || 'Check for duplicate names.'));
+                    }
+                },
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                }
+            });
+        }
+
+        loadCategories();
+    });
+    </script>
+</body>
+</html>

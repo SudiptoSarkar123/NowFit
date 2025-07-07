@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOWFit - Admin Dashboard</title>
+
+    <!-- Google Fonts for a modern look -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <!-- Chart.js for beautiful charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+   <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+        <!-- ===== Sidebar ===== -->
+        <%- include('../layouts/sideBar') %>
+
+
+            <!-- ===== Main Content Area ===== -->
+            <div class="content-wrapper">
+                <!-- ===== Header ===== -->
+                <%- include('../layouts/header') %>
+                    <!-- ===== Main Content & Widgets ===== -->
+                    <main class="main-content">
+                        <div class="dashboard-widgets">
+
+                            <!-- KPI Card 1: Pending Approvals -->
+                            <div class="card kpi-card approvals actionable">
+                                <div class="icon"><i class="fa-solid fa-user-plus"></i></div>
+                                <div class="info">
+                                    <h2>3</h2>
+                                    <p>Pending Approvals</p>
+                                </div>
+                            </div>
+
+                            <!-- KPI Card 2: Active Coaches -->
+                            <div class="card kpi-card coaches">
+                                <div class="icon"><i class="fa-solid fa-user-tie"></i></div>
+                                <div class="info">
+                                    <h2>42</h2>
+                                    <p>Active Coaches</p>
+                                </div>
+                            </div>
+
+                            <!-- KPI Card 3: Active Clients -->
+                            <div class="card kpi-card clients">
+                                <div class="icon"><i class="fa-solid fa-users"></i></div>
+                                <div class="info">
+                                    <h2>350</h2>
+                                    <p>Total Active Clients</p>
+                                </div>
+                            </div>
+
+                            <!-- KPI Card 4: Revenue -->
+                            <div class="card kpi-card revenue">
+                                <div class="icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                                <div class="info">
+                                    <h2>$1,250</h2>
+                                    <p>Commission (30 Days)</p>
+                                </div>
+                            </div>
+
+                            <!-- Chart Card 1: Revenue -->
+                            <div class="card chart-card">
+                                <div class="card-header">
+                                    <h3>Platform Revenue (Last 30 Days)</h3>
+                                </div>
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+
+                            <!-- Chart Card 2: Growth -->
+                            <div class="card chart-card">
+                                <div class="card-header">
+                                    <h3>New Coach Sign-ups</h3>
+                                </div>
+                                <canvas id="growthChart"></canvas>
+                            </div>
+
+                            <!-- List Card: Pending Approvals -->
+                            <div class="card list-card chart-card full-width">
+                                <div class="card-header">
+                                    <h3>New Sign-ups Awaiting Approval</h3>
+                                </div>
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Jane Doe</td>
+                                            <td>jane.doe@example.com</td>
+                                            <td>2025-06-07</td>
+                                            <td>
+                                                <button class="btn btn-approve">Approve</button>
+                                                <button class="btn btn-reject">Reject</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>John Smith</td>
+                                            <td>john.smith@example.com</td>
+                                            <td>2025-06-06</td>
+                                            <td>
+                                                <button class="btn btn-approve">Approve</button>
+                                                <button class="btn btn-reject">Reject</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Alice Johnson</td>
+                                            <td>alice.j@example.com</td>
+                                            <td>2025-06-05</td>
+                                            <td>
+                                                <button class="btn btn-approve">Approve</button>
+                                                <button class="btn btn-reject">Reject</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+    <script>
+        // --- JavaScript for Interactivity ---
+
+        // 1. Mobile Menu Toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.querySelector('.sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('show');
+        });
+
+        // 2. Chart.js Implementation (with dummy data)
+        document.addEventListener('DOMContentLoaded', () => {
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+
+            // Revenue Chart (Line Chart)
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [500, 750, 600, 900, 850, 1250],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Growth Chart (Bar Chart)
+            new Chart(growthCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'New Coaches',
+                        data: [5, 8, 12, 10, 15, 18],
+                        backgroundColor: '#10b981',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

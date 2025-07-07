@@ -1,0 +1,62 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <a href="/coach/dashboard" style="text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px;">
+            <i class="fa-solid fa-dumbbell logo"></i>
+            <h2>NOWFit</h2>
+        </a>
+    </div>
+    <ul class="sidebar-nav">
+        <!-- Dashboard -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Dashboard')) ? 'active' : '' %>">
+            <a href="/coach/dashboard"><i class="fa-solid fa-tachometer-alt icon"></i> <span>Dashboard</span></a>
+        </li>
+
+        <!-- Client Management -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Clients')) ? 'active' : '' %>">
+            <a href="/coach/client-management"><i class="fa-solid fa-users icon"></i> <span>Clients</span></a>
+        </li>
+      
+        
+        <!-- Category Management -->
+        <li class="<%- title.includes('Category') ? 'active' : '' %>">
+            <a href="/coach/category-management"><i class="fa-solid fa-sitemap icon"></i> <span>Category Management</span></a>
+        </li>
+        
+        <!-- Workout Library -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Workout')) ? 'active' : '' %>">
+            <a href="/coach/workout-library"><i class="fa-solid fa-dumbbell icon"></i> <span>Workout Library</span></a>
+        </li>
+        
+        <!-- Recipe Management -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Recipe')) ? 'active' : '' %>">
+            <a href="/coach/recipe-management"><i class="fa-solid fa-utensils icon"></i> <span>Recipe Management</span></a>
+        </li>
+        
+        <!-- Schedule -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Schedule')) ? 'active' : '' %>">
+            <a href="/coach/schedule"><i class="fa-solid fa-calendar-alt icon"></i> <span>Schedule</span></a>
+        </li>
+        
+        <!-- Team Management -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Team')) ? 'active' : '' %>">
+            <a href="/coach/team"><i class="fa-solid fa-user-friends icon"></i> <span>Team Management</span></a>
+        </li>
+        
+        <!-- Earnings & Packages -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Earnings')) ? 'active' : '' %>">
+            <a href="/coach/earnings"><i class="fa-solid fa-sack-dollar icon"></i> <span>Earnings & Packages</span></a>
+        </li>
+        
+        <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
+
+        <!-- Settings -->
+        <li class="<%- (typeof title !== 'undefined' && title.includes('Settings')) ? 'active' : '' %>">
+            <a href="/coach/settings"><i class="fa-solid fa-gear icon"></i> <span>Settings</span></a>
+        </li>
+        
+        <!-- Logout -->
+        <li>
+            <a href="/coach/logout"><i class="fa-solid fa-sign-out-alt icon"></i> <span>Logout</span></a>
+        </li>
+    </ul>
+</nav>

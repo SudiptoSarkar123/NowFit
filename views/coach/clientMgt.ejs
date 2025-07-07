@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Clients - NOWFit</title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css"> <!-- Your main stylesheet -->
+    <link rel="stylesheet" href="/css/coach.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Assume sidebar and header are included via EJS -->
+        <%- include('../layouts/coach/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/coach/header') %>
+            
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>My Clients</h3>
+                        <div class="table-controls">
+                            <!-- Button to add a new client can go here -->
+                            <button class="btn-primary" id="addNewClientBtn"><i class="fa-solid fa-plus"></i> Add New Client</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- You can add status filter tabs here if desired -->
+                        <table id="clientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Client Name</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Joined Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Client data will be populated here by AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Include modals for Add/Edit if needed -->
+     <!-- ========== ADD NEW CLIENT MODAL ========== -->
+<div class="modal-overlay" id="addClientModalOverlay" style="display: none;">
+    <div class="modal" id="addClientModal">
+        <div class="modal-header">
+            <h3>Invite New Client</h3>
+            <button class="modal-close-btn" id="addClientModalCloseBtn">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Enter your new client's details below. We'll send them an email to get started.</p>
+            <form id="addClientForm">
+                <div class="form-group">
+                    <label for="newClientName">Client's Full Name</label>
+                    <input type="text" id="newClientName" name="fullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="newClientEmail">Client's Email Address</label>
+                    <input type="email" id="newClientEmail" name="email" required>
+                </div>
+                <!-- Optional: Add a field to send an initial offer/package -->
+                <div class="modal-footer">
+                    <button type="submit" class="btn-primary">Send Invitation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+     
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+     <script>
+    $(document).ready(function () {
+        const tableElement = document.getElementById('clientsTable');
+        let dataTable;
+
+        // --- MODAL ELEMENTS AND FUNCTIONS ---
+        const addClientModalOverlay = $('#addClientModalOverlay');
+        const addClientForm = $('#addClientForm');
+
+        function showAddClientModal() {
+            addClientForm[0].reset(); // Clear the form before showing
+            addClientModalOverlay.addClass('show').fadeIn(200);
+        }
+        function hideAddClientModal() {
+            addClientModalOverlay.removeClass('show').fadeOut(200);
+        }
+        
+        // Listen for close button and overlay clicks
+        $('#addClientModalCloseBtn').on('click', hideAddClientModal);
+        addClientModalOverlay.on('click', function(e) {
+            if ($(e.target).is(addClientModalOverlay)) {
+                hideAddClientModal();
+            }
+        });
+
+
+        // --- Core function to load clients into the table ---
+        function loadClients() {
+            $.ajax({
+                url: '/coach/clients',
+                method: 'GET',
+                dataType: 'json',
+                beforeSend: function () {
+                    if (dataTable) { dataTable.destroy(); }
+                    $('#clientsTable tbody').html('<tr><td colspan="5">Loading clients...</td></tr>');
+                },
+                success: function (response) {
+                    if (response.success) {
+                        populateTableAndReinitialize(response.data);
+                    }
+                },
+                error: function () {
+                    $('#clientsTable tbody').html('<tr><td colspan="5" style="color:red;">Error loading clients.</td></tr>');
+                }
+            });
+        }
+        
+        function populateTableAndReinitialize(clients) {
+            const tableBody = $('#clientsTable tbody');
+            tableBody.empty();
+            
+            if (clients && clients.length > 0) {
+                clients.forEach(client => {
+                    const statusPill = `<span class="status-pill status-${client.status}">${client.status}</span>`;
+                    const formattedDate = new Date(client.dateJoined).toLocaleDateString();
+                    const actions = `
+                        <div class="action-buttons">
+                            <a href="/coach/client/${client._id}" class="action-btn view-btn" title="View Details">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <button class="action-btn message-btn" data-id="${client._id}" title="Send Message">
+                                <i class="fa-solid fa-comment"></i>
+                            </button>
+                        </div>
+                    `;
+                    const row = `
+                        <tr>
+                            <td>${client.fullName}</td>
+                            <td>${client.email}</td>
+                            <td>${statusPill}</td>
+                            <td>${formattedDate}</td>
+                            <td>${actions}</td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+            }
+
+            dataTable = new simpleDatatables.DataTable(tableElement, {
+                searchable: true,
+                labels: { placeholder: "Search my clients..." }
+            });
+        }
+        
+        // --- EVENT LISTENERS ---
+        
+        // Listen for click on the main "Add New Client" button
+        $('#addNewClientBtn').on('click', function() {
+            showAddClientModal();
+        });
+
+        // Listen for the new client form submission
+        addClientForm.on('submit', function(e) {
+            e.preventDefault(); // Stop the form from reloading the page
+
+            // Get data from the form
+            const newClientData = {
+                fullName: $('#newClientName').val(),
+                email: $('#newClientEmail').val()
+            };
+
+            // Send data to the backend via AJAX
+            $.ajax({
+                url: '/coach/clients/add',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(newClientData),
+                success: function(response) {
+                    if(response.success) {
+                       Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            timer:1500,
+                            showConfirmButton:false
+                          });
+                          setTimeout(()=>{
+                            window.location.href = '/coach/client-management';
+                          },1500);
+                    } else {
+                        alert('Error: ' + (response.message || 'Could not add client.'));
+                    }
+                },
+                error: function(xhr) {
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                }
+            });
+        });
+
+
+        // --- Initial Load ---
+        loadClients();
+    });
+    </script>
+</body>
+</html>

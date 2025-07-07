@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Head content is perfect -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style> /* Your styles are fine */ </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <!-- Sidebar and Header are fine -->
+        <%- include('../layouts/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/header') %>
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>Enquiry Management</h3>
+                        <!-- Correct: No "Add New" button -->
+                    </div>
+                    <div class="card-body">
+                        <table id="enquiryTable">
+                            <thead>
+                                <tr>
+                                    <th>Received Date</th>
+                                    <th>Full Name</th>
+                                    <th>Email</th>
+                                    <th>Client Count</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- View Details Modal is fine -->
+    <div class="modal-overlay" id="enquiryModalOverlay" style="display: none;">
+        <div class="modal" id="enquiryModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Enquiry Details</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+    $(document).ready(function () {
+        // **FIX 1**: Use the correct table ID
+        const tableElement = document.getElementById('enquiryTable');
+        let dataTable;
+        let allEnquiriesData = []; // This one is needed
+
+        // Modal elements
+        const modalOverlay = $('#enquiryModalOverlay');
+        const modalTitle = $('#modalTitle');
+        const modalBody = $('#modalBody');
+        const modalCloseBtn = $('#modalCloseBtn');
+        function showModal() { modalOverlay.addClass('show').fadeIn(200); }
+        function hideModal() { modalOverlay.removeClass('show').fadeOut(200); }
+        modalCloseBtn.on('click', hideModal);
+        modalOverlay.on('click', function (e) { if ($(e.target).is(modalOverlay)) { hideModal(); } });
+
+        function loadEnquiries() {
+            $.ajax({
+                url: '/api/admin/enquiries', // **CHANGE**: Assuming a consistent single API endpoint
+                method: 'GET',
+                dataType: 'json',
+                beforeSend: function () {
+                    if (dataTable) { dataTable.destroy(); }
+                    $('#enquiryTable tbody').html(`<tr><td colspan="6">Loading...</td></tr>`); // colspan is 6
+                },
+                success: function (response) {
+                    if (!response.success || !Array.isArray(response.data)) { return; }
+                    allEnquiriesData = response.data;
+                    populateTableAndReinitialize(allEnquiriesData);
+                },
+                error: function () {
+                    $('#enquiryTable tbody').html(`<tr><td colspan="6" style="color:red;">Error loading data.</td></tr>`);
+                }
+            });
+        }
+
+        function populateTableAndReinitialize(enquiries) {
+            const tableBody = $('#enquiryTable tbody');
+            tableBody.empty();
+            if (enquiries.length > 0) {
+                enquiries.forEach(enquiry => {
+                    // **FIX 2**: Use 'enquiry.status' instead of 'client.status'
+                    const statusPill = `<span class="status-pill status-${enquiry.status.toLowerCase()}">${enquiry.status}</span>`;
+                    // **FIX 3**: Use 'receivedAt' for consistency with schema
+                    const formattedDate = new Date(enquiry.receivedAt).toLocaleString();
+                    let actions = `<button class="action-btn view-btn" data-id="${enquiry._id}" title="View"><i class="fa-solid fa-eye"></i></button>`;
+                    
+                    if (enquiry.status === 'New') {
+                        actions += `<button class="action-btn contact-btn" data-id="${enquiry._id}" title="Mark as Contacted"><i class="fa-solid fa-check"></i></button>`;
+                    }
+                    actions += `<button class="action-btn delete-btn" data-id="${enquiry._id}" title="Delete"><i class="fa-solid fa-trash"></i></button>`;
+
+                    const row = `<tr>
+                        <td>${formattedDate}</td>
+                        <td>${enquiry.fullName}</td>
+                        <td>${enquiry.email}</td>
+                        <td>${enquiry.clientCount || 'N/A'}</td>
+                        <td>${statusPill}</td>
+                        <td>${actions}</td>
+                    </tr>`;
+                    tableBody.append(row);
+});
+            }
+            dataTable = new simpleDatatables.DataTable(tableElement, {
+                searchable: true,
+                labels: { placeholder: "Search enquiries...", noRows: "No enquiries found." }
+            });
+        }
+
+        // **FIX 4**: Unified event listener for actions
+        $('#enquiryTable').on('click', '.action-btn', function () {
+            const enquiryId = $(this).data('id');
+            if ($(this).hasClass('view-btn')) handleViewDetails(enquiryId);
+            else if ($(this).hasClass('contact-btn')) handleMarkAsContacted(enquiryId);
+            else if ($(this).hasClass('delete-btn')) handleDeleteEnquiry(enquiryId);
+        });
+
+        function handleViewDetails(enquiryId) {
+            const enquiry = allEnquiriesData.find(e => e._id === enquiryId);
+            if (!enquiry) return;
+            modalTitle.text('Enquiry Details');
+            const detailsHtml = `<div class="details-grid">
+                <strong>Full Name:</strong> <span>${enquiry.fullName}</span>
+                <strong>Email:</strong> <span>${enquiry.email}</span>
+                <strong>Contact No:</strong> <span>${enquiry.contactNumber || 'N/A'}</span>
+                <strong>Status:</strong> <span class="status-pill status-${enquiry.status.toLowerCase()}">${enquiry.status}</span>
+                <strong>Social Link:</strong> <span><a href="${enquiry.socialMediaLink || '#'}" target="_blank">${enquiry.socialMediaLink || 'N/A'}</a></span>
+                <strong>Client Count:</strong> <span>${enquiry.clientCount || 'N/A'}</span>
+                <strong>How Heard:</strong> <span>${enquiry.howHeard || 'N/A'}</span>
+                <strong>Received:</strong> <span>${new Date(enquiry.receivedAt).toLocaleString()}</span>
+            </div>`;
+            modalBody.html(detailsHtml);
+            showModal();
+        }
+
+        // **FIX 5**: Simplified API calls to be consistent
+        function handleMarkAsContacted(enquiryId) {
+            $.ajax({
+                url: '/api/admin/enquiries/update',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ action: 'update_status', id: enquiryId, status: 'Contacted' }),
+                success: function (res) { if (res.success) { 
+                   Swal.fire({
+                       icon: 'success',
+                       title: 'Success',
+                       text: res.message,
+                   })
+                    setTimeout(()=>{
+                        window.location.href = '/admin/enquiry-management';
+                    },1500);
+                } else { alert('Action failed'); } },
+                error: function(xhr) { 
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                 }
+            });
+        }
+
+        function handleDeleteEnquiry(enquiryId) {
+            if (confirm('Are you sure you want to delete this enquiry?')) {
+                $.ajax({
+                    url: '/api/admin/enquiries/delete', // Single endpoint
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ action: 'delete', id: enquiryId }),
+                    success: function (res) { if (res.success) { 
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: res.message,
+                        })
+                        setTimeout(()=>{
+                            window.location.href = '/admin/enquiry-management';
+                        },1500);
+                    } else { alert('Action failed'); } },
+                    error: function(xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon:'error',
+                            title:'Oops...',
+                            text:errorMsg
+                        })
+                      }
+                });
+            }
+        }
+        
+        loadEnquiries();
+    });
+    </script>
+</body>
+</html>

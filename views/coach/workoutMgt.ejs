@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <!-- All required CSS/Library links -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/coach.css">
+    <style>
+        /* CSS specifically for this page */
+        #mediaPreview {
+            max-width: 100%;
+            height: 100px;
+            max-height: 200px;
+            margin-top: 15px;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+        .exercise-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/coach/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/coach/header') %>
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>Workout Library Management</h3>
+                        <div class="table-controls">
+                            <button class="btn-primary" id="addNewExerciseBtn"><i class="fa-solid fa-plus"></i> Add New Exercise</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table id="libraryTable">
+                            <thead>
+                                <tr>
+                                    <th>Preview</th>
+                                    <th>Exercise Name</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add/Edit Modal -->
+    <div class="modal-overlay" id="libraryModalOverlay" style="display: none;">
+        <div class="modal" id="libraryModal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Add/Edit Exercise</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- IMPORTANT: Add enctype for file uploads -->
+                <form id="libraryForm" enctype="multipart/form-data">
+                    <input type="hidden" id="exerciseId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="exerciseName">Exercise Name</label>
+                        <input type="text" id="exerciseName" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exerciseDescription">Description</label>
+                        <textarea id="exerciseDescription" name="description" required></textarea>
+                    </div>
+                    
+                    
+                    <div class="form-group">
+                        <label for="exerciseCategory">Category</label>
+                        <select id="exerciseCategory" name="category" required>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exerciseStatus">Status</label>
+                        <select id="exerciseStatus" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="exerciseMedia">Upload Video/Image</label>
+                        <input type="file" id="exerciseMedia" name="mediaFile" accept="video/*,image/*">
+                        <small>Leave blank if you don't want to change the existing media.</small>
+                    </div>
+
+
+                    <!-- Media Preview Area -->
+                    <div id="mediaPreviewContainer"></div>
+
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">Save Exercise</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+
+    <script>
+    $(document).ready(function () {
+        const tableElement = document.getElementById('libraryTable');
+        let dataTable;
+        let allCategoriesData = [];
+
+        // Modal elements
+        const modalOverlay = $('#libraryModalOverlay');
+        const modalTitle = $('#modalTitle');
+        const modalBody = $('#modalBody');
+        const modalCloseBtn = $('#modalCloseBtn');
+        
+        // Form & Preview elements
+        const libraryForm = $('#libraryForm');
+        const mediaPreviewContainer = $('#mediaPreviewContainer');
+        const fileInput = $('#exerciseMedia');
+
+        function showModal() { modalOverlay.addClass('show').fadeIn(200); }
+        function hideModal() { modalOverlay.removeClass('show').fadeOut(200); }
+        modalCloseBtn.on('click', hideModal);
+        modalOverlay.on('click', function(e) { if ($(e.target).is(modalOverlay)) { hideModal(); } });
+
+        // load all categories for dropdown
+      function loadAllCategoriesForDropdowns() {
+          $.ajax({
+              url: '/coach/categories',
+              method: 'GET',
+              dataType: 'json',
+              success: function (response) {
+                  if (response.success){
+                    allCategoriesData = response.data;
+                    console.log(response.data);
+                    const assignCatagorySelect = $('#exerciseCategory');
+                    assignCatagorySelect.empty().append('<option value="">Select Category</option>');
+                    response.data.forEach(function (category) {
+                        assignCatagorySelect.append(`<option value="${category._id}">${category.name}</option>`);
+                    });
+                    return;
+                  }
+              },
+              error: function () {
+                  $('#libraryTable tbody').html(`<tr><td colspan="5" style="color:red;">Error loading categories.</td></tr>`);
+              }
+          })
+      }
+
+        // Function to load exercises using the "destroy and rebuild" pattern
+        function loadExercises() {
+            $.ajax({
+                url: '/coach/workouts',
+                method: 'GET',
+                dataType: 'json',
+                beforeSend: function () {
+                    if (dataTable) dataTable.destroy();
+                    $('#libraryTable tbody').html(`<tr><td colspan="5">Loading...</td></tr>`);
+                },
+                success: function (response) {
+                    if (!response.success) return;
+                    populateTableAndReinitialize(response.data);
+                },
+                error: function () {
+                    $('#libraryTable tbody').html(`<tr><td colspan="5" style="color:red;">Error loading exercises.</td></tr>`);
+                }
+            });
+        }
+        
+        function populateTableAndReinitialize(exercises) {
+            const tableBody = $('#libraryTable tbody');
+            tableBody.empty();
+            exercises.forEach(exercise => {
+                // Create thumbnail for the table
+                let thumbnailHtml = `<img src="/images/placeholder.png" class="exercise-thumbnail">`; // A default placeholder
+                if (exercise.mediaFile) {
+                 if (exercise.mediaFile && exercise.mediaFile.match(/\.(mp4|webm|ogg)$/i)) {
+                        thumbnailHtml = `<video src="${exercise.mediaFile}" class="exercise-thumbnail" muted></video>`;
+                    } else {
+                        thumbnailHtml = `<img src="${exercise.mediaFile}" class="exercise-thumbnail">`;
+                    }
+                }
+
+                const statusPill = `<span class="status-pill status-${exercise.status}">${exercise.status}</span>`;
+                const actions = `<div class="action-buttons"><button class="action-btn edit-btn" data-id="${exercise._id}"><i class="fa-solid fa-pencil"></i></button><button class="action-btn block-btn" data-id="${exercise._id}"><i class="fa-solid fa-ban"></i></button></div>`;
+                const row = `<tr><td>${thumbnailHtml}</td><td>${exercise.name}</td><td>${exercise.category.name}</td><td>${statusPill}</td><td>${actions}</td></tr>`;
+                tableBody.append(row);
+            });
+            dataTable = new simpleDatatables.DataTable(tableElement, { searchable: true, labels: { placeholder: "Search exercises..." } });
+        }
+        
+        // --- Event Listeners ---
+        $('#addNewExerciseBtn').on('click', handleAddExercise);
+        
+        $('#libraryTable').on('click', '.action-btn', function () {
+            const exerciseId = $(this).data('id');
+            if ($(this).hasClass('edit-btn')) handleEditExercise(exerciseId);
+            else if ($(this).hasClass('block-btn')) handleBlockExercise(exerciseId);
+        });
+        
+        // --- Action Handlers ---
+        function handleAddExercise() {
+            libraryForm[0].reset();
+            $('#exerciseId').val(''); // Clear ID
+            modalTitle.text('Add New Exercise');
+            mediaPreviewContainer.empty(); // Clear preview
+            fileInput.prop('required', true); // Make file upload required for new exercises
+            showModal();
+        }
+        
+        function handleEditExercise(exerciseId) {
+        console.log('Editing exercise with ID:', exerciseId);
+            $.ajax({
+                url: `/api/admin/library/${exerciseId}`, // Assuming an endpoint to get single item
+                method: 'GET',
+                success: function(response) {
+                    if(!response.success) { alert('Could not fetch exercise details.'); return; }
+                    const exercise = response.data;
+                    libraryForm[0].reset();
+                    modalTitle.text('Edit Exercise');
+                    $('#exerciseId').val(exercise._id);
+                    $('#exerciseName').val(exercise.name);
+                    $('#exerciseDescription').val(exercise.description);
+                    $('#exerciseCategory').val(exercise.category);
+                    $('#exerciseStatus').val(exercise.status);  
+                    
+                    // Show current media
+                    mediaPreviewContainer.empty();
+                    if(exercise.mediaFile) {
+                         if (exercise.mediaType === 'video') {
+                            mediaPreviewContainer.html(`<video src="${exercise.mediaFile}" id="mediaPreview" controls></video>`);
+                        } else {
+                            mediaPreviewContainer.html(`<img src="${exercise.mediaFile}" id="mediaPreview">`);
+                        }
+                    }
+
+                    fileInput.prop('required', false); // Not required when editing
+                    showModal();
+                }
+            });
+        }
+        
+        function handleBlockExercise(exerciseId) {
+            // Simplified action using the unified endpoint logic
+            if (!confirm('Are you sure you want to toggle the status of this exercise?')) return;
+            $.ajax({
+                url: '/api/admin/library/'+exerciseId+'/block',
+                method: 'GET',
+                success: function(response) {
+                     if(response.success){
+                        Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            timer:1500,
+                            showConfirmButton:false
+                        })
+                        setTimeout(()=>{
+                            window.location.href = '/coach/workout-library';
+                        },1500);
+                     } else { 
+                        alert('Action failed.');
+                     } },
+                error: (xhr) => {
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                }
+            });
+        }
+        
+        // --- FORM SUBMISSION for File Upload ---
+        libraryForm.on('submit', function (e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this); // Use FormData for file uploads
+            const exerciseId = $('#exerciseId').val();
+
+            // Determine if it's an 'add' or 'update' action
+            const action = exerciseId ? 'update' : 'add';
+            formData.append('action', action);
+                  
+            $.ajax({
+                url: '/coach/workouts/add-update', // The single POST endpoint
+                method: 'POST',
+                data: formData,
+                processData: false, // Tell jQuery not to process the data
+                contentType: false, // Tell jQuery not to set contentType
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon:'success',
+                            title:'Success',
+                            text:response.message,
+                            timer:1500,
+                            showConfirmButton:false
+                        })
+                        setTimeout(()=>{
+                            window.location.href = '/coach/workout-library';
+                        },1500);
+                        // alert('Exercise ' + (action === 'add' ? 'added' : 'updated') + ' successfully!'); hideLibraryModal(); loadExercises();
+                    } 
+                },
+
+                error: function (xhr) {
+                    const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                    Swal.fire({
+                        icon:'error',
+                        title:'Oops...',
+                        text:errorMsg
+                    })
+                    
+                }
+            });
+                
+        });
+        
+        // --- Live File Preview ---
+        fileInput.on('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const fileUrl = URL.createObjectURL(file);
+                mediaPreviewContainer.empty();
+                if (file.type.startsWith('image/')) {
+                    mediaPreviewContainer.html(`<img src="${fileUrl}" id="mediaPreview">`);
+                } else if (file.type.startsWith('video/')) {
+                    mediaPreviewContainer.html(`<video src="${fileUrl}" id="mediaPreview" controls></video>`);
+                }
+            }
+        });
+
+        // --- Initial Load ---
+        loadAllCategoriesForDropdowns();
+        loadExercises();
+    });
+    
+    </script>
+</body>
+</html>

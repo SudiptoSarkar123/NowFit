@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    <!-- **NEW**: GridStack.js for Draggable Widgets -->
+    <link href="https://cdn.jsdelivr.net/npm/gridstack@7.2.2/dist/gridstack.min.css" rel="stylesheet"/>
+    
+    <link rel="stylesheet" href="/css/style.css"> 
+    <link rel="stylesheet" href="/css/coach.css">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Assume sidebar and header are included via EJS -->
+        <%- include('../layouts/coach/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/coach/header') %>
+            
+            <main class="main-content">
+                <div class="dashboard-layout">
+                    <!-- ========== LEFT COLUMN: CLIENTS ========== -->
+                    <div class="left-column">
+                        <div class="card client-list-section">
+                            <div class="card-header">
+                                <h3>Your Clients</h3>
+                                <div class="client-filter-tabs">
+                                    <button class="tab-link active" data-filter="all">All</button>
+                                    <button class="tab-link" data-filter="connected">Connected</button>
+                                    <button class="tab-link" data-filter="pending">Pending</button>
+                                    <button class="tab-link" data-filter="needs_program">Needs Program</button>
+                                </div>
+                            </div>
+                            <div class="card-body" style="padding: 0;">
+                                <ul class="client-list" id="clientList">
+                                    <!-- DUMMY DATA: This will be populated by JS -->
+                                    <li data-client-id="1" class="selected">
+                                        <div class="client-info">
+                                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Client Avatar">
+                                            <div>
+                                                <div class="client-name">Jessica Miller</div>
+                                                <div class="last-message">Sounds great, thanks!</div>
+                                            </div>
+                                        </div>
+                                        <div class="client-status-dot dot-green" title="Active"></div>
+                                    </li>
+                                    <li data-client-id="2">
+                                        <div class="client-info">
+                                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Client Avatar">
+                                            <div>
+                                                <div class="client-name">Mark Chen</div>
+                                                <div class="last-message">Check-in submitted.</div>
+                                            </div>
+                                        </div>
+                                        <div class="client-status-dot dot-yellow" title="Needs Attention"></div>
+                                    </li>
+                                    <!-- ... More clients here ... -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- ========== RIGHT COLUMN: WIDGETS ========== -->
+                    <div class="right-column">
+                        <h2 id="selectedClientName">Jessica Miller</h2>
+                        <!-- This is the container for draggable widgets -->
+                        <div class="grid-stack">
+                            <!-- Widget 1: Client Contact -->
+                            <div class="grid-stack-item" gs-w="2" gs-h="2">
+                                <div class="grid-stack-item-content">
+                                    <div class="widget-header"><h4>Client Info</h4><i class="fas fa-id-card"></i></div>
+                                    <p><strong>Email:</strong> j.miller@example.com</p>
+                                    <p><strong>Subscription:</strong> Gold Plan</p>
+                                </div>
+                            </div>
+                            <!-- Widget 2: Client Progress Graph -->
+                            <div class="grid-stack-item" gs-w="2" gs-h="3" gs-x="2">
+                                <div class="grid-stack-item-content">
+                                    <div class="widget-header"><h4>Weight Progress</h4><i class="fas fa-chart-line"></i></div>
+                                    <canvas id="progressChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- Widget 3: Goals / Habits -->
+                            <div class="grid-stack-item" gs-w="2" gs-h="2">
+                                <div class="grid-stack-item-content">
+                                     <div class="widget-header"><h4>Goals & Habits</h4><i class="fas fa-bullseye"></i></div>
+                                     <p><strong>Goal:</strong> Lose 5 kg by Sept 1st.</p>
+                                     <button class="btn btn-secondary" style="width: 100%;">Assign Habit</button>
+                                </div>
+                            </div>
+                             <!-- Widget 4 & 5: Workout and Meal Plans -->
+                            <div class="grid-stack-item" gs-w="2" gs-h="2">
+                                 <div class="grid-stack-item-content">
+                                      <div class="widget-header"><h4>Workout Program</h4><i class="fas fa-dumbbell"></i></div>
+                                      <p>Assigned: <strong>4-Week Strength</strong></p>
+                                      <a href="#">Change Program</a>
+                                 </div>
+                            </div>
+                            <div class="grid-stack-item" gs-w="2" gs-h="2">
+                                  <div class="grid-stack-item-content">
+                                       <div class="widget-header"><h4>Meal Plan</h4><i class="fas fa-utensils"></i></div>
+                                       <p>Assigned: <strong>Lean Muscle (2200 kcal)</strong></p>
+                                       <a href="#">Edit Plan</a>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gridstack@7.2.2/dist/gridstack-all.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // --- 1. INITIALIZE DRAGGABLE WIDGET GRID ---
+            const grid = GridStack.init({
+                float: true, // Allow widgets to float up
+                cellHeight: '80px', // Set a base height for one row
+                minRow: 1, // Don't allow it to be empty
+                alwaysShowResizeHandle: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+            });
+            
+            grid.on('change', function(event, items) {
+                // When a widget is moved or resized, save the layout
+                const layout = items.map(item => ({
+                    id: item.el.id, // You would add IDs to your widget divs
+                    x: item.x,
+                    y: item.y,
+                    w: item.w,
+                    h: item.h
+                }));
+                console.log('Layout changed! Saving...', layout);
+                // AJAX POST to /coach/dashboard-layout with the `layout` data
+            });
+
+            // --- 2. CLIENT LIST INTERACTIVITY ---
+            $('#clientList').on('click', 'li', function() {
+                // Remove 'selected' class from all other items
+                $('#clientList li').removeClass('selected');
+                // Add 'selected' to the one that was clicked
+                $(this).addClass('selected');
+                
+                // Fetch and update data for the selected client
+                const clientId = $(this).data('client-id');
+                const clientName = $(this).find('.client-name').text();
+                
+                $('#selectedClientName').text(clientName);
+                
+                console.log(`Loading data for client ID: ${clientId}`);
+                // In a real app, an AJAX GET to /coach/dashboard-data/${clientId} would happen here
+                // Then you would update the content of each widget with the new data.
+            });
+            
+            // --- 3. FILTER TAB INTERACTIVITY ---
+            $('.client-filter-tabs').on('click', '.tab-link', function() {
+                $('.client-filter-tabs .tab-link').removeClass('active');
+                $(this).addClass('active');
+                
+                const filter = $(this).data('filter');
+                console.log(`Filtering clients by: ${filter}`);
+                // AJAX GET to /coach/clients?status=${filter} to refresh the list
+            });
+            
+            // --- 4. INITIALIZE WIDGET CONTENT (e.g., charts) ---
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
+                    datasets: [{
+                        label: 'Weight (kg)',
+                        data: [80, 79.5, 79, 78.8, 78],
+                        borderColor: 'var(--primary-color)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        });
+    </script>
+</body>
+</html>

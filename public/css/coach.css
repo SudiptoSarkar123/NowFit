@@ -1,0 +1,136 @@
+ /* CSS specific to the Coach Dashboard */
+        body { background-color: #f9fafb; }
+        .main-content { padding: 25px; }
+
+        /* Dashboard Layout */
+        .dashboard-layout { display: grid; grid-template-columns: 1fr 400px; gap: 25px; }
+        
+        /* Left Column: Client List & Main Area */
+        .client-list-section .card-header { padding-bottom: 0; }
+        .client-filter-tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--border-color); }
+        .client-filter-tabs .tab-link { background: none; border: none; padding: 10px 15px; cursor: pointer; border-bottom: 3px solid transparent; }
+        .client-filter-tabs .tab-link.active { color: var(--primary-color); font-weight: 600; border-bottom-color: var(--primary-color); }
+        
+        .client-list { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+        .client-list li { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+        .client-list li:hover, .client-list li.selected { background-color: var(--primary-light); }
+        .client-info { display: flex; align-items: center; gap: 15px; }
+        .client-info img { width: 45px; height: 45px; border-radius: 50%; }
+        .client-name { font-weight: 600; }
+        .last-message { color: var(--text-light); font-size: 0.9rem; }
+        .client-status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .dot-green { background-color: var(--success); }
+        .dot-yellow { background-color: #f59e0b; }
+        
+        /* Right Column: Draggable Widgets */
+        #selectedClientName { margin-bottom: 20px; font-size: 1.5rem; }
+        .grid-stack { background: #e0e7ff20; } /* Optional background for grid area */
+        .grid-stack-item-content {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 20px;
+            overflow: hidden; /* Prevent content from spilling */
+        }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .widget-header h4 { font-size: 1.1rem; margin: 0; }
+
+
+        /* --- Header Styles (Coach Dashboard) --- */
+.header {
+    /* ... your existing header styles ... */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-left, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+#menu-toggle {
+    /* This button should only be visible on mobile */
+    display: none; 
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+    position: relative;
+}
+.search-bar .fa-search {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-light);
+}
+.search-bar input {
+    background-color: var(--light-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px 15px 10px 40px; /* Left padding for icon */
+    width: 250px;
+    transition: width 0.3s ease;
+}
+.search-bar input:focus {
+    width: 300px;
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* --- Header Action Icons --- */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-icon-btn {
+    position: relative;
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.notification-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444; /* Red dot */
+    border-radius: 50%;
+    border: 1px solid white;
+}
+
+/* --- User Profile --- */
+.user-profile img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* --- Responsive Media Query (IMPORTANT) --- */
+@media (max-width: 768px) {
+    #menu-toggle {
+        display: block; /* Show hamburger button on mobile */
+    }
+    .search-bar {
+        display: none; /* Hide search bar on smaller screens for simplicity */
+    }
+}

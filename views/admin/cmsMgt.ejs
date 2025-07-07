@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%- title %></title>
+    <!-- CSS / Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- **NEW**: Rich Text Editor CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+    <style>
+        /* CSS for the CMS cards */
+        .cms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .cms-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+        .cms-card-header {
+            padding: 15px 20px;
+            background-color: #f9fafb;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .cms-card-header h4 { margin: 0; font-size: 1.1rem; }
+        .cms-card-content { padding: 20px; flex-grow: 1; }
+        .cms-card-content p {
+            margin: 0;
+            color: var(--text-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* Show 3 lines of text */
+            -webkit-box-orient: vertical;
+        }
+        .cms-card-content img { max-width: 100%; height: auto; max-height: 150px; border-radius: 8px; }
+        .cms-card-footer { padding: 15px 20px; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/sideBar') %>
+        <div class="content-wrapper">
+            <%- include('../layouts/header') %>
+            <main class="main-content">
+                <div class="card full-width-card">
+                    <div class="card-header">
+                        <h3>Content Management (CMS)</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>Edit the static text and images that appear throughout your website and application.</p>
+                        <!-- Grid container for all the editable content blocks -->
+                        <div class="cms-grid" id="cmsGridContainer">
+                            <!-- Cards will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- A SINGLE Modal for all CMS editing -->
+    <div class="modal-overlay" id="cmsModalOverlay" style="display: none;">
+        <div class="modal" id="cmsModal" style="max-width: 900px;"> <!-- Wider modal for rich text -->
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Content</h3>
+                <button class="modal-close-btn" id="modalCloseBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="cmsForm" enctype="multipart/form-data">
+                    <input type="hidden" id="contentKey" name="key">
+                    <input type="hidden" id="contentType" name="type">
+                    <!-- The dynamic editor area -->
+                    <div class="form-group" id="editorContainer"></div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- **NEW**: Rich Text Editor JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.js"></script>
+
+    <script>
+    $(document).ready(function () {
+        const gridContainer = $('#cmsGridContainer');
+        const modal = {
+            overlay: $('#cmsModalOverlay'),
+            title: $('#modalTitle'),
+            form: $('#cmsForm'),
+            closeBtn: $('#modalCloseBtn'),
+            editorContainer: $('#editorContainer'),
+            contentKey: $('#contentKey'),
+            contentType: $('#contentType'),
+            show: () => modal.overlay.addClass('show').fadeIn(200),
+            hide: () => modal.overlay.removeClass('show').fadeOut(200)
+        };
+        let quillEditor; // Variable to hold the rich text editor instance
+
+        modal.closeBtn.on('click', modal.hide);
+        modal.overlay.on('click', function(e) { if ($(e.target).is(modal.overlay)) { modal.hide(); }});
+
+        function loadContentBlocks() {
+            $.get('/admin/cms', function(response) {
+                if (response.success && Array.isArray(response.data)) {
+                    gridContainer.empty();
+                    response.data.forEach(block => {
+                        let contentPreview = '';
+                        // Generate a preview based on the content type
+                        if (block.type === 'image_url') {
+                            contentPreview = `<img src="${block.content}" alt="${block.displayName}">`;
+                        } else if (block.type === 'rich_text') {
+                            contentPreview = `<div>${block.content || 'No content yet.'}</div>`; // Use div to render HTML
+                        } else {
+                            contentPreview = `<p>${block.content || 'No content yet.'}</p>`;
+                        }
+                        
+                        const cardHtml = `
+                            <div class="cms-card">
+                                <div class="cms-card-header"><h4>${block.displayName}</h4></div>
+                                <div class="cms-card-content">${contentPreview}</div>
+                                <div class="cms-card-footer">
+                                    <button class="btn btn-primary edit-btn" data-key="${block.key}">Edit</button>
+                                </div>
+                            </div>
+                        `;
+                        gridContainer.append(cardHtml);
+                    });
+                } else {
+                    gridContainer.html('<p>Could not load content blocks.</p>');
+                }
+            });
+        }
+        
+        // --- Event Listeners ---
+        gridContainer.on('click', '.edit-btn', function() {
+            const key = $(this).data('key');
+            // Fetch full details to edit
+            $.get(`/admin/cms/${key}`, function(response) {
+                if(response.success) {
+                    const block = response.data;
+                    modal.title.text(`Editing: ${block.displayName}`);
+                    modal.contentKey.val(block.key);
+                    modal.contentType.val(block.type);
+                    
+                    let editorHtml = '';
+                    modal.editorContainer.empty(); // Clear previous editor
+
+                    // Dynamically create the correct editor
+                    if (block.type === 'rich_text') {
+                        modal.editorContainer.html('<div id="quill-editor"></div>');
+                        quillEditor = new Quill('#quill-editor', { theme: 'snow', modules: { toolbar: true } });
+                        quillEditor.root.innerHTML = block.content;
+                    } else if (block.type === 'image_url') {
+                        editorHtml = `<p>Current Image:</p><img src="${block.content}" style="max-width: 200px; border-radius: 8px;"><br><br><label>Upload New Image:</label><input type="file" name="contentFile" accept="image/*">`;
+                        modal.editorContainer.html(editorHtml);
+                    } else { // plain_text
+                        editorHtml = `<label>Content:</label><textarea name="content" rows="10" style="width: 100%">${block.content}</textarea>`;
+                        modal.editorContainer.html(editorHtml);
+                    }
+                    modal.show();
+                }
+            });
+        });
+        
+        // --- FORM SUBMISSION ---
+        modal.form.on('submit', function(e) {
+            e.preventDefault();
+            const type = modal.contentType.val();
+            let formData;
+            
+            // Check if we need to send as JSON or multipart/form-data
+            if (type === 'image_url' && $('input[name="contentFile"]')[0].files[0]) {
+                formData = new FormData(this); // FormData for file upload
+                formData.append('action', 'update');
+            } else {
+                let content;
+                if (type === 'rich_text') {
+                    content = quillEditor.root.innerHTML;
+                } else {
+                    content = $('textarea[name="content"]').val();
+                }
+                formData = JSON.stringify({
+                    action: 'update',
+                    key: modal.contentKey.val(),
+                    content: content
+                });
+            }
+
+            $.ajax({
+                url: '/admin/cms',
+                method: 'POST',
+                data: formData,
+                // These are needed for FormData to work
+                processData: type !== 'image_url', 
+                contentType: type === 'image_url' ? false : 'application/json',
+                success: function(response) {
+                    if (response.success) {
+                        alert('Content updated successfully!');
+                        modal.hide();
+                        loadContentBlocks();
+                    } else {
+                        alert('Update failed: ' + (response.message || 'Error'));
+                    }
+                },
+                error: function() {
+                    alert('An error occurred.');
+                }
+            });
+        });
+
+        // --- Initial Load ---
+        loadContentBlocks();
+    });
+    </script>
+</body>
+</html>

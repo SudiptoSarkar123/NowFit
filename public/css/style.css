@@ -1,0 +1,800 @@
+    /* --- CSS Variables for Easy Theming --- */
+    :root {
+        --primary-color: #4f46e5;
+        --primary-light: #e0e7ff;
+        --secondary-color: #10b981;
+        --background-color: #f3f4f6;
+        --text-color: #374151;
+        --heading-color: #111827;
+        --card-bg: #ffffff;
+        --border-color: #e5e7eb;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* --- General Reset & Body Styles --- */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--background-color);
+        color: var(--text-color);
+        line-height: 1.6;
+    }
+
+    /* --- Main Dashboard Layout (CSS Grid) --- */
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        grid-template-rows: auto 1fr;
+        grid-template-areas:
+            "sidebar header"
+            "sidebar main";
+        height: 100vh;
+        transition: grid-template-columns 0.3s ease;
+    }
+
+    /* --- Sidebar Navigation --- */
+    .sidebar {
+        grid-area: sidebar;
+        background: var(--heading-color);
+        color: #fff;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.3s ease-in-out;
+        overflow-y: auto;
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 40px;
+    }
+
+    .sidebar-header .logo {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .sidebar-nav ul {
+        list-style-type: none;
+    }
+
+    .sidebar-nav li a {
+        display: flex;
+        align-items: center;
+        color: #a0aec0;
+        text-decoration: none;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .sidebar-nav li a .icon {
+        width: 24px;
+        margin-right: 15px;
+        font-size: 1.2rem;
+    }
+
+    .sidebar-nav li.active a,
+    .sidebar-nav li a:hover {
+        background: var(--primary-color);
+        color: #fff;
+    }
+
+    /* --- Header --- */
+    .header {
+        grid-area: header;
+        background: var(--card-bg);
+        padding: 15px 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    #menu-toggle {
+        display: none;
+        /* Hidden on desktop */
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--heading-color);
+    }
+
+    .header-title h1 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--heading-color);
+    }
+
+    .admin-profile {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .admin-profile i {
+        font-size: 1.5rem;
+        color: var(--text-color);
+    }
+
+    /* --- Main Content Area --- */
+    .main-content {
+        grid-area: main;
+        overflow-y: auto;
+        padding: 30px;
+    }
+
+    /* --- Widgets Grid Layout --- */
+    .dashboard-widgets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+
+    /* --- Card Base Style --- */
+    .card {
+        background: var(--card-bg);
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        transition: transform 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .card-header h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--heading-color);
+    }
+
+    /* --- KPI Card Styles --- */
+    .kpi-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .kpi-card .icon {
+        font-size: 2.5rem;
+        padding: 15px;
+        border-radius: 50%;
+        color: #fff;
+    }
+
+    .kpi-card.approvals .icon {
+        background: #f59e0b;
+    }
+
+    .kpi-card.coaches .icon {
+        background: var(--primary-color);
+    }
+
+    .kpi-card.clients .icon {
+        background: #ef4444;
+    }
+
+    .kpi-card.revenue .icon {
+        background: var(--secondary-color);
+    }
+
+    .kpi-card .info h2 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--heading-color);
+    }
+
+    .kpi-card .info p {
+        font-size: 0.9rem;
+        color: var(--text-color);
+    }
+
+    .kpi-card.actionable {
+        cursor: pointer;
+        border-left: 5px solid #f59e0b;
+    }
+
+    /* --- Chart Card Styles --- */
+    .chart-card {
+        grid-column: span 1 / -1;
+        /* Make chart cards span full width */
+    }
+
+    @media (min-width: 1024px) {
+        .chart-card {
+            grid-column: span 2;
+        }
+
+        .chart-card.full-width {
+            grid-column: span 4;
+        }
+    }
+
+    /* --- List Card Styles (for tables & feeds) --- */
+    .list-card table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .list-card th,
+    .list-card td {
+        text-align: left;
+        padding: 12px 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .list-card th {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        color: var(--text-color);
+    }
+
+    .list-card td {
+        font-size: 0.9rem;
+    }
+
+    .list-card .btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 6px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 0.8rem;
+    }
+
+    .list-card .btn-approve {
+        background: var(--secondary-color);
+    }
+
+    .list-card .btn-reject {
+        background: #ef4444;
+    }
+
+    .list-card .btn:hover {
+        opacity: 0.8;
+    }
+
+    /* --- Responsive Design (Media Queries) --- */
+
+    /* Tablets */
+    @media (max-width: 992px) {
+        .dashboard-container {
+            grid-template-columns: 260px 1fr;
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+            /* Single column layout */
+            grid-template-areas:
+                "header"
+                "main";
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
+            width: 260px;
+            transform: translateX(-100%);
+            /* Hide sidebar off-screen */
+            z-index: 1000;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar.show {
+            transform: translateX(0);
+            /* Show sidebar */
+        }
+
+        #menu-toggle {
+            display: block;
+            /* Show hamburger menu button */
+        }
+    }
+
+    /* --- Styles for the Data Table Card --- */
+    .full-width-card {
+        grid-column: 1 / -1;
+        /* Makes the card span the full width of the main content area */
+    }
+
+    .card-body {
+        padding-top: 20px;
+    }
+
+    .table-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .filter-group label {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .filter-group select,
+    .btn {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background-color: #fff;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .btn {
+        cursor: pointer;
+        border: none;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background-color: #4338ca;
+    }
+
+    /* --- Status Pill Styles --- */
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        text-transform: capitalize;
+    }
+
+    .status-active,
+    .status-approved {
+        background-color: var(--secondary-color);
+    }
+
+    .status-pending {
+        background-color: #f59e0b;
+    }
+
+    .status-blocked,
+    .status-rejected {
+        background-color: #ef4444;
+    }
+
+    .status-inactive {
+        background-color: #ef4444;
+    }
+
+    /* --- Action Button Styles --- */
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        margin: 0 5px;
+        color: var(--text-color);
+        transition: color 0.2s;
+    }
+
+    .action-btn.view:hover {
+        color: var(--primary-color);
+    }
+
+    .action-btn.edit:hover {
+        color: #f59e0b;
+    }
+
+    .action-btn.delete:hover {
+        color: #ef4444;
+    }
+
+
+    /* --- Simple-DataTables Customization --- */
+    .datatable-search {
+        margin-bottom: 15px;
+    }
+
+    .datatable-input {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+    }
+
+    .datatable-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .datatable-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+        text-align: left;
+    }
+
+    .datatable-table th,
+    .datatable-table td {
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+    }
+
+
+
+    /* --- Modal Styles --- */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal {
+        background: #fff;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transform: translateY(-50px);
+        transition: transform 0.3s;
+    }
+
+    .modal-overlay.show .modal {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--heading-color);
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: #9ca3af;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    /* Styles for the View Details content */
+    .details-grid {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 15px;
+    }
+
+    .details-grid strong {
+        color: var(--heading-color);
+    }
+
+    /* Styles for the Edit Form */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 1px solid #e5e7eb;
+        text-align: right;
+    }
+
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+    }
+
+
+    /* Add this to your CSS file or inside a <style> tag */
+    .modal-footer .btn {
+        border-radius: 6px;
+        padding: 8px 24px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .modal-footer .btn-primary {
+        background: linear-gradient(90deg, #1b44ff, #0248e0);
+        border: none;
+        color: #fff;
+        padding: 10px 24px;
+    }
+
+    .modal-footer .btn-primary:hover {
+        background: linear-gradient(90deg, #4613ff, #158017f6);
+        color: #fff;
+    }
+
+    .modal-footer .btn-secondary {
+        background: #f1f1f1;
+        color: #333;
+        border: none;
+    }
+
+    .modal-footer .btn-secondary:hover {
+        background: #e2e2e2;
+    }
+
+
+
+    .card.full-width-card {
+        grid-column: 1 / -1;
+    }
+
+    .card-body {
+        padding-top: 20px;
+    }
+
+    .card-header .table-controls {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .table-controls .btn-primary {
+        background-color: var(--primary-color);
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .table-controls .btn-primary:hover {
+        background-color: #4338ca;
+    }
+
+    .status-pill {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        text-transform: capitalize;
+        display: inline-block;
+    }
+
+    .status-active,
+    .status-contacted {
+        background-color: #10b981;
+    }
+
+    .status-pending,
+    .status-new {
+        background-color: #f59e0b;
+    }
+
+    .status-blocked,
+    .status-closed {
+        background-color: #ef4444;
+    }
+
+    .action-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.1rem;
+        margin: 0 5px;
+        color: #6b7280;
+        transition: color 0.2s;
+    }
+
+    .action-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .datatable-input {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .datatable-table th {
+        background-color: #f9fafb;
+        font-weight: 600;
+    }
+
+    .datatable-table th,
+    .datatable-table td {
+        padding: 12px 15px;
+        border: 1px solid #e5e7eb;
+    }
+
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .modal {
+        background: #fff;
+        border-radius: 12px;
+        /* width: 90%; */
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        max-width: 600px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transform: translateY(-50px);
+        transition: transform 0.3s;
+    }
+
+    .modal-overlay.show .modal {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        cursor: pointer;
+        color: #9ca3af;
+    }
+
+    .modal-body {
+        padding: 25px;
+         overflow-y: auto;
+           padding-bottom: 25px; 
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 15px;
+    }
+
+    .details-grid strong {
+        color: var(--heading-color);
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+
+    .modal-footer {
+         margin-top: auto; 
+        padding: 20px 25px;
+        border-top: 1px solid #e5e7eb;
+        text-align: right;
+           flex-shrink: 0; 
+    }
+
+
+
+
+    

@@ -1,0 +1,30 @@
+<header class="header">
+    <div class="header-left">
+        <!-- Hamburger Menu Toggle for Mobile -->
+        <button id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+
+        <!-- Dynamic Page Title -->
+        <h1 class="header-title"><%- typeof title !== 'undefined' ? title : 'Dashboard' %></h1>
+    </div>
+
+    <div class="header-right">
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" placeholder="Search clients, programs...">
+        </div>
+
+        <!-- Action Icons -->
+        <div class="header-actions">
+            <button class="header-icon-btn" title="Notifications">
+                <i class="fa-solid fa-bell"></i>
+                <span class="notification-dot"></span> <!-- A dot to indicate new notifications -->
+            </button>
+
+            <!-- User Profile Dropdown -->
+            <div class="user-profile">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Coach Avatar" id="profile-avatar">
+            </div>
+        </div>
+    </div>
+</header>
