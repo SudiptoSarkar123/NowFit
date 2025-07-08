@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Center - NOWFit</title>
+    <!-- All necessary CSS and Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/coach.css">
+    <style>
+        .assignment-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; visibility: hidden; } /* Hidden initially */
+        .assignment-panel { background-color: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); }
+        .panel-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .panel-body { padding: 20px; }
+        #clientSelectorCard { margin-bottom: 25px; padding: 25px; }
+        #clientSelector { width: 100%; max-width: 500px; padding: 12px; font-size: 1.1rem; }
+        .tab-navigation { border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .tab-link { background: none; border: none; padding: 10px 15px; cursor: pointer; font-size: 1.1rem; }
+        .tab-link.active { color: var(--primary-color); font-weight: 600; border-bottom: 3px solid var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .template-list { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; }
+        .template-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #f3f4f6; }
+    </style>
+</head>
+
+<body>
+<div class="dashboard-container">
+    <%- include('../layouts/coach/sideBar') %>
+    <div class="content-wrapper">
+        <%- include('../layouts/coach/header') %>
+        <main class="main-content">
+
+            <!-- ================== STEP 1: SELECT A CLIENT ================== -->
+            <div class="card full-width-card" id="clientSelectorCard">
+                <h3>Assignment Center</h3>
+                <p>Select a client from the list to view their current programs and assign new ones.</p>
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="clientSelector" style="font-size: 1.2rem;">Select Client:</label>
+                    <select id="clientSelector" class="form-control">
+                        <option value="">-- Please choose a client --</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ================== STEP 2 & 3: ASSIGNMENT INTERFACE ================== -->
+            <div class="assignment-layout" id="assignmentLayout">
+                <!-- LEFT PANEL: CURRENTLY ASSIGNED -->
+                <div class="assignment-panel">
+                    <div class="panel-header"><h3 id="currentAssignmentsHeader">Currently Assigned</h3></div>
+                    <div class="panel-body">
+                        <div id="currentWorkout"><p>Select a client to view their assigned workout.</p></div>
+                        <hr>
+                        <div id="currentMealPlan"><p>Select a client to view their assigned meal plan.</p></div>
+                    </div>
+                </div>
+
+                <!-- RIGHT PANEL: AVAILABLE TEMPLATES -->
+                <div class="assignment-panel">
+                    <div class="panel-header"><h3>Available Templates Library</h3></div>
+                    <div class="panel-body">
+                        <div class="tab-navigation">
+                            <button class="tab-link active" data-tab="workouts">Workout Programs</button>
+                            <button class="tab-link" data-tab="meals">Meal Plans</button>
+                        </div>
+                        <div class="tab-content active" id="workouts"><ul class="template-list" id="workoutTemplateList"><li>Loading...</li></ul></div>
+                        <div class="tab-content" id="meals"><ul class="template-list" id="mealPlanTemplateList"><li>Loading...</li></ul></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    let selectedClientId = null;
+
+    // --- Tab Switching Logic ---
+    $('.tab-link').on('click', function() {
+        $('.tab-link').removeClass('active');
+        $(this).addClass('active');
+        const tabId = $(this).data('tab');
+        $('.tab-content').removeClass('active');
+        $('#' + tabId).addClass('active');
+    });
+
+    // --- DATA LOADING FUNCTIONS ---
+    
+    // 1. Load the initial list of clients for the dropdown
+    function loadClientsForDropdown() {
+        $.get('/coach/clients', function(res) {
+            if (res.success && res.data) {
+                const selector = $('#clientSelector');
+                res.data.forEach(client => {
+                    selector.append(`<option value="${client._id}" data-name="${client.fullName}">${client.fullName}</option>`);
+                });
+            }
+        });
+    }
+
+    // 2. Load the coach's templates (runs once)
+    function loadAllTemplates() {
+        // Load Workout Templates
+        $.get('/coach/workout-programs', function(res) {
+            if(res.success && res.data) {
+                const list = $('#workoutTemplateList');
+                list.empty();
+                res.data.forEach(t => list.append(`<li class="template-item"><span><strong>${t.name}</strong></span><button class="btn btn-primary assign-workout-btn" data-id="${t._id}">Assign</button></li>`));
+            }
+        });
+        // Load Meal Plan Templates
+        $.get('/coach/meal-plans', function(res) {
+             if(res.success && res.data) {
+                const list = $('#mealPlanTemplateList');
+                list.empty();
+                res.data.forEach(t => list.append(`<li class="template-item"><span><strong>${t.name}</strong></span><button class="btn btn-primary assign-meal-btn" data-id="${t._id}">Assign</button></li>`));
+            }
+        });
+    }
+
+    // 3. Load the CURRENT assignments for the SELECTED client
+    function loadCurrentAssignments(clientId) {
+        if (!clientId) {
+            $('#currentWorkout, #currentMealPlan').html('<p>Select a client to view.</p>');
+            return;
+        }
+        
+        // Fetch data for the specific client
+        $.get(`/coach/clients/${clientId}/assignments`, function(res) {
+            if (res.success) {
+                const assignments = res.data;
+                const workoutEl = $('#currentWorkout');
+                const mealPlanEl = $('#currentMealPlan');
+
+                if (assignments.workoutProgram && assignments.workoutProgram.programName) {
+                    workoutEl.html(`<h4><i class="fas fa-dumbbell"></i> Workout Program</h4><p><strong>${assignments.workoutProgram.programName}</strong></p>`);
+                } else {
+                    workoutEl.html(`<h4><i class="fas fa-dumbbell"></i> Workout Program</h4><p>No program assigned.</p>`);
+                }
+                
+                if (assignments.mealPlan && assignments.mealPlan.planName) {
+                    mealPlanEl.html(`<h4><i class="fas fa-utensils"></i> Meal Plan</h4><p><strong>${assignments.mealPlan.planName}</strong></p>`);
+                } else {
+                    mealPlanEl.html(`<h4><i class="fas fa-utensils"></i> Meal Plan</h4><p>No meal plan assigned.</p>`);
+                }
+            }
+        });
+    }
+
+    // --- EVENT LISTENERS ---
+    
+    // When the client dropdown changes
+    $('#clientSelector').on('change', function() {
+        selectedClientId = $(this).val();
+        
+        if (selectedClientId) {
+            const clientName = $(this).find('option:selected').data('name');
+            $('#currentAssignmentsHeader').text(`Currently Assigned for ${clientName}`);
+            loadCurrentAssignments(selectedClientId);
+            // Show the assignment layout
+            $('#assignmentLayout').css('visibility', 'visible');
+        } else {
+            // Hide layout if no client is selected
+            $('#assignmentLayout').css('visibility', 'hidden');
+        }
+    });
+
+    // Delegated listener for the "Assign" buttons
+    $(document).on('click', '.assign-workout-btn, .assign-meal-btn', function() {
+        if (!selectedClientId) {
+            alert('Please select a client first!');
+            return;
+        }
+        
+        const templateId = $(this).data('id');
+        const isWorkout = $(this).hasClass('assign-workout-btn');
+        const endpoint = isWorkout ? 'assign-program' : 'assign-meal-plan';
+        
+        if (!confirm('This will replace any existing plan. Are you sure?')) return;
+        
+        $.ajax({
+            url: `/coach/clients/${selectedClientId}/${endpoint}`,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ templateId: templateId }),
+            success: function(res) {
+                if (res.success) {
+                    alert('Plan assigned successfully!');
+                    loadCurrentAssignments(selectedClientId); // Refresh the view
+                } else { alert('Failed to assign plan.'); }
+            },
+            error: function() { alert('Server error.'); }
+        });
+    });
+
+    // --- INITIAL PAGE LOAD ---
+    loadClientsForDropdown();
+    loadAllTemplates();
+});
+</script>
+</body>
+</html>

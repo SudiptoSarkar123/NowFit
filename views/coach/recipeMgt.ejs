@@ -113,7 +113,7 @@
 
         // Fetch categories specifically for recipes
         function loadRecipeCategories() {
-            $.get('/api/admin/categories', function(response) {
+            $.get('/coach/categories', function(response) {
                 if (response.success) {
                     allCategoriesData = response.data;
                     console.log(allCategoriesData);
@@ -129,7 +129,7 @@
         
         function loadRecipes() {
             $.ajax({
-                url: '/api/admin/recipes',
+                url: '/coach/recipes',
                 method: 'GET',
                 beforeSend: function() { if (dataTable) dataTable.destroy(); $('#recipeTable tbody').html(`<tr><td colspan="5">Loading...</td></tr>`); },
                 success: function (response) { if (response.success) populateTableAndReinitialize(response.data); },
@@ -181,7 +181,7 @@
 
         $('#recipeTable').on('click', '.edit-btn', function () {
             const recipeId = $(this).data('id');
-            $.get(`/api/admin/recipes/${recipeId}`, function(response) {
+            $.get(`/coach/recipes/${recipeId}`, function(response) {
                 if(response.success) {
                     const recipe = response.data;
                     recipeForm[0].reset();
@@ -211,7 +211,8 @@
             if (!confirm('Are you sure you want to toggle the status?')) return;
             const recipeId = $(this).data('id');
             $.ajax({
-                url: '/api/admin/recipes', method: 'POST',
+                url: '/coach/recipes', 
+                method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ action: 'delete', id: recipeId }),
                 success: function(res) { if (res.success) {
@@ -221,7 +222,7 @@
                         text: res.message,
                     })
                     setTimeout(()=>{
-                        window.location.href = '/admin/recipe-management';
+                        window.location.href = '/coach/recipe-management';
                     },1500);
                 } },
                 error: function(xhr) { 
@@ -265,7 +266,7 @@
             };
             
             $.ajax({
-                url: '/api/admin/recipes',
+                url: '/coach/recipes',
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(formData),
@@ -279,7 +280,7 @@
                             showConfirmButton:false
                           });
                           setTimeout(()=>{
-                            window.location.href = '/admin/recipe-management';
+                            window.location.href = '/coach/recipe-management';
                           },1500);
                     } else {
                         alert('Operation failed: ' + (response.message || 'Error'));

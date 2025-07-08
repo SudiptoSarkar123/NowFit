@@ -82,6 +82,39 @@ class StaticController {
     }
   }
 
+  async createProgramPg(req,res){
+    try {
+      return res.render('coach/createProgram',{title:'Create Program'})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error:'Internal Server Error'
+        })
+    }
+  }
+
+  async assignProgramPg(req,res){
+    try {
+      return res.render('coach/assignProgram',{title:'Assign Program'})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error:'Internal Server Error'
+        })
+    }
+  }
+
+  async createMealPlanPg(req,res){
+    try {
+      return res.render('coach/createMealPlan',{title:'Create Meal Plan'})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error:'Internal Server Error'
+        })
+    }
+  }
+
 }
 
 module.exports = new StaticController();

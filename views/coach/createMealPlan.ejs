@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Plan Builder - NOWFit</title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/coach.css">
+    <style>
+        /* CSS specific to the meal plan builder */
+        .builder-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            height: calc(100vh - 150px);
+        }
+
+        .plan-builder,
+        .recipe-library {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .builder-header,
+        .library-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .builder-header h3,
+        .library-header h3 {
+            margin: 0;
+        }
+
+        .builder-content,
+        .library-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Left Panel: Builder */
+        .totals-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+            padding: 15px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .totals-bar div span {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        .totals-bar div strong {
+            font-size: 1.2rem;
+        }
+
+        .meal-slot {
+            border: 1px dashed var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .meal-slot-header {
+            padding: 10px 15px;
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
+        .added-recipes-list {
+            padding: 15px;
+            min-height: 50px;
+        }
+
+        .added-recipe {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        /* Right Panel: Library */
+        #searchRecipeInput {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .library-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .library-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        .library-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .builder-actions {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Add this to your <style> block at the top of the file */
+
+        .library-item .add-to-meal-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .library-item .add-recipe-btn {
+            background-color: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            color: #6b7280;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .library-item .add-recipe-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/coach/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/coach/header') %>
+                    <main class="main-content">
+                        <div class="builder-layout">
+                            <!-- ================== LEFT PANEL: The Meal Plan Builder ================== -->
+                            <div class="plan-builder">
+                                <div class="builder-header">
+                                    <h3>Create Meal Plan Template</h3>
+                                </div>
+                                <div class="builder-content">
+                                    <form id="mealPlanForm">
+                                        <div class="form-group"><label>Plan Name</label><input type="text" id="planName"
+                                                required></div>
+                                        <div class="form-group"><label>Description</label><input type="text"
+                                                id="planDescription"></div>
+
+                                        <!-- Live Totals Bar -->
+                                        <div class="totals-bar">
+                                            <div><span>Calories (kcal)</span><strong id="total-calories">0</strong>
+                                            </div>
+                                            <div><span>Protein (g)</span><strong id="total-protein">0</strong></div>
+                                            <div><span>Carbs (g)</span><strong id="total-carbs">0</strong></div>
+                                            <div><span>Fats (g)</span><strong id="total-fats">0</strong></div>
+                                        </div>
+
+                                        <!-- Meal Slots -->
+                                        <div class="meal-slot" data-meal-type="breakfast">
+                                            <div class="meal-slot-header">Breakfast</div>
+                                            <div class="added-recipes-list"></div>
+                                        </div>
+                                        <div class="meal-slot" data-meal-type="lunch">
+                                            <div class="meal-slot-header">Lunch</div>
+                                            <div class="added-recipes-list"></div>
+                                        </div>
+                                        <div class="meal-slot" data-meal-type="dinner">
+                                            <div class="meal-slot-header">Dinner</div>
+                                            <div class="added-recipes-list"></div>
+                                        </div>
+                                        <div class="meal-slot" data-meal-type="snacks">
+                                            <div class="meal-slot-header">Snacks</div>
+                                            <div class="added-recipes-list"></div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="builder-actions">
+                                    <button type="button" class="btn btn-primary" id="savePlanBtn"
+                                        style="width: 100%;">Save Meal Plan Template</button>
+                                </div>
+                            </div>
+
+                            <!-- ================== RIGHT PANEL: The Recipe Library ================== -->
+                            <div class="recipe-library">
+                                <div class="library-header">
+                                    <h3>Recipe Library</h3>
+                                </div>
+                                <div class="library-content">
+                                    <input type="text" id="searchRecipeInput" placeholder="Search for a recipe...">
+                                    <div class="library-list">
+                                        <ul id="recipeLibraryList">
+                                            <li>Loading recipes...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            let allRecipes = []; // Cache for the recipe library
+
+            // --- LIBRARY FUNCTIONS ---
+            function loadRecipeLibrary() {
+                $.get('/coach/recipes', { search: $('#searchRecipeInput').val() }, function (res) {
+                    if (res.success) {
+                        // console.log(res.data);
+                        allRecipes = res.data;
+                        renderRecipeList(allRecipes);
+                    }
+                });
+            }
+
+            // --- In your <script> tag ---
+
+            function renderRecipeList(recipes) {
+                const list = $('#recipeLibraryList');
+                list.empty();
+                recipes.forEach(rec => {
+                    // **NEW**: Create individual "add" buttons for each meal type
+                    const addButtonsHtml = `
+            <div class="add-to-meal-actions">
+                <button class="add-recipe-btn" data-meal-type="breakfast" title="Add to Breakfast"><i class="fa-solid fa-mug-saucer"></i></button>
+                <button class="add-recipe-btn" data-meal-type="lunch" title="Add to Lunch"><i class="fa-solid fa-sun"></i></button>
+                <button class="add-recipe-btn" data-meal-type="dinner" title="Add to Dinner"><i class="fa-solid fa-moon"></i></button>
+                <button class="add-recipe-btn" data-meal-type="snacks" title="Add to Snacks"><i class="fa-solid fa-apple-alt"></i></button>
+            </div>
+        `;
+
+                    const itemHtml = `
+            <li class="library-item" data-id="${rec._id}">
+                <div>
+                    <span>${rec.name}</span><br>
+                    <small>${rec.nutrition.calories} kcal</small>
+                </div>
+                ${addButtonsHtml}
+            </li>
+        `;
+                    list.append(itemHtml);
+                });
+            }
+            $('#searchRecipeInput').on('keyup', loadRecipeLibrary);
+
+            // --- BUILDER FUNCTIONS ---
+            function addRecipeToPlan(recipeId) {
+                const recipe = allRecipes.find(r => r._id === recipeId);
+                if (!recipe) return;
+
+                // For simplicity, this demo adds to the first available slot.
+                // A better version could use drag-and-drop or let user choose the slot.
+                const targetSlot = $('.meal-slot').first().find('.added-recipes-list');
+
+                const recipeHtml = `
+            <div class="added-recipe" data-id="${recipe._id}" data-calories="${recipe.nutrition.calories}" data-protein="${recipe.nutrition.protein}" data-carbs="${recipe.nutrition.carbs}" data-fats="${recipe.nutrition.fats}">
+                <span>${recipe.name}</span>
+                <button type="button" class="remove-recipe-btn">×</button>
+            </div>
+        `;
+                targetSlot.append(recipeHtml);
+                updateTotals();
+            }
+
+            function updateTotals() {
+                let calories = 0, protein = 0, carbs = 0, fats = 0;
+
+                $('.added-recipe').each(function () {
+                    calories += parseFloat($(this).data('calories')) || 0;
+                    protein += parseFloat($(this).data('protein')) || 0;
+                    carbs += parseFloat($(this).data('carbs')) || 0;
+                    fats += parseFloat($(this).data('fats')) || 0;
+                });
+
+                $('#total-calories').text(Math.round(calories));
+                $('#total-protein').text(Math.round(protein));
+                $('#total-carbs').text(Math.round(carbs));
+                $('#total-fats').text(Math.round(fats));
+            }
+
+            // --- EVENT LISTENERS ---
+            $('#recipeLibraryList').on('click', '.add-recipe-btn', function () {
+                // Get the recipe ID from the parent <li> element
+                const recipeId = $(this).closest('.library-item').data('id');
+                // Get the target meal type from the button itself
+                const mealType = $(this).data('meal-type');
+
+                addRecipeToPlan(recipeId, mealType);
+            });
+
+            function addRecipeToPlan(recipeId, targetMealType) {
+                const recipe = allRecipes.find(r => r._id === recipeId);
+                if (!recipe) return;
+
+                // Find the correct meal slot on the left panel using the mealType
+                const targetSlotList = $(`.meal-slot[data-meal-type="${targetMealType}"]`).find('.added-recipes-list');
+
+                if (targetSlotList.length === 0) {
+                    alert('Could not find the target meal slot.');
+                    return;
+                }
+
+                const recipeHtml = `
+        <div class="added-recipe" data-id="${recipe._id}" data-calories="${recipe.nutrition.calories}" data-protein="${recipe.nutrition.protein}" data-carbs="${recipe.nutrition.carbs}" data-fats="${recipe.nutrition.fats}">
+            <span>${recipe.name}</span>
+            <button type="button" class="remove-recipe-btn">×</button>
+        </div>
+    `;
+
+                // Append the new recipe to the correct list
+                targetSlotList.append(recipeHtml);
+                updateTotals(); // This function doesn't need to change, it works perfectly as is.
+            }
+
+
+            $('.plan-builder').on('click', '.remove-recipe-btn', function () {
+                $(this).closest('.added-recipe').remove();
+                updateTotals();
+            });
+
+            $('#savePlanBtn').on('click', function () {
+                const planData = {
+                    action: 'add',
+                    name: $('#planName').val(),
+                    description: $('#planDescription').val(),
+                    dailyPlan: {
+                        breakfast: [], lunch: [], dinner: [], snacks: []
+                    }
+                };
+
+                if (!planData.name) {
+                    alert('Please give your meal plan a name.');
+                    return;
+                }
+
+                $('.meal-slot').each(function () {
+                    const mealType = $(this).data('meal-type');
+                    $(this).find('.added-recipe').each(function () {
+                        planData.dailyPlan[mealType].push($(this).data('id'));
+                    });
+                });
+
+                console.log("Saving Meal Plan:", planData);
+                // POST request to /coach/meal-plans with `planData`
+                $.ajax({
+                    url: '/coach/meal-plans',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(planData),
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: res.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                            setTimeout(() => {
+                                window.location.href = '/coach/create-mealPlan';
+                            }, 1500);
+                        } else { alert('Error: ' + (res.message || 'Could not save plan.')); }
+                    },
+                    error: function (xhr) { 
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon:'error',
+                            title:'Oops...',
+                            text:errorMsg
+                        })
+                     }
+                });
+            });
+
+            // --- INITIAL LOAD ---
+            loadRecipeLibrary();
+        });
+    </script>
+</body>
+
+</html>
