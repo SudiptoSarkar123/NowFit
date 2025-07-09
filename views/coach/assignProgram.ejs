@@ -123,33 +123,56 @@ $(document).ready(function() {
     }
 
     // 3. Load the CURRENT assignments for the SELECTED client
-    function loadCurrentAssignments(clientId) {
-        if (!clientId) {
-            $('#currentWorkout, #currentMealPlan').html('<p>Select a client to view.</p>');
-            return;
-        }
-        
-        // Fetch data for the specific client
-        $.get(`/coach/clients/${clientId}/assignments`, function(res) {
-            if (res.success) {
-                const assignments = res.data;
-                const workoutEl = $('#currentWorkout');
-                const mealPlanEl = $('#currentMealPlan');
+    // In your <script> tag for assignment-center.ejs
 
-                if (assignments.workoutProgram && assignments.workoutProgram.programName) {
-                    workoutEl.html(`<h4><i class="fas fa-dumbbell"></i> Workout Program</h4><p><strong>${assignments.workoutProgram.programName}</strong></p>`);
-                } else {
-                    workoutEl.html(`<h4><i class="fas fa-dumbbell"></i> Workout Program</h4><p>No program assigned.</p>`);
-                }
-                
-                if (assignments.mealPlan && assignments.mealPlan.planName) {
-                    mealPlanEl.html(`<h4><i class="fas fa-utensils"></i> Meal Plan</h4><p><strong>${assignments.mealPlan.planName}</strong></p>`);
-                } else {
-                    mealPlanEl.html(`<h4><i class="fas fa-utensils"></i> Meal Plan</h4><p>No meal plan assigned.</p>`);
-                }
-            }
-        });
+function loadCurrentAssignments(clientId) {
+    if (!clientId) {
+        // ... (handle case where no client is selected)
+        return;
     }
+
+    // This GET request to your API does not change
+    $.get(`/coach/clients/${clientId}/assignments`, function(res) {
+        if (res.success) {
+            console.log(res.data);
+            const assignments = res.data;
+            const workoutEl = $('#currentWorkout');
+            const mealPlanEl = $('#currentMealPlan');
+
+            // --- LOGIC FOR WORKOUTS (handles an ARRAY) ---
+            workoutEl.html(`<h4><i class="fas fa-dumbbell"></i> Assigned Workout Programs</h4>`);
+            if (assignments.assignedWorkoutProgram && assignments.assignedWorkoutProgram.length > 0) {
+                let workoutListHtml = '<ul>';
+                assignments.assignedWorkoutProgram.forEach(assignment => {
+                    // This part remains the same, looping through the array
+                    if (assignment.programId && assignment.programId.name) {
+                        workoutListHtml += `<li><strong>${assignment.programId.name}</strong></li>`;
+                    }
+                });
+                workoutListHtml += '</ul>';
+                workoutEl.append(workoutListHtml);
+            } else {
+                workoutEl.append('<p>No workout programs assigned.</p>');
+            }
+            
+            // --- CORRECTED LOGIC FOR MEAL PLAN (handles an OBJECT) ---
+            mealPlanEl.html(`<h4><i class="fas fa-utensils"></i> Assigned Meal Plan</h4>`);
+            
+            // Now, we check for a single object, not an array's length
+            if (assignments.assignedMealPlan && assignments.assignedMealPlan.mealPlanId) {
+                // We directly access the name property. No loop needed.
+                const planName = assignments.assignedMealPlan.mealPlanId.name || 'Unnamed Plan';
+                mealPlanEl.append(`<p><strong>${planName}</strong></p>`);
+            } else {
+                mealPlanEl.append('<p>No meal plan assigned.</p>');
+            }
+        } else {
+             // Handle the error if the AJAX call fails
+             $('#currentWorkout').html('<p style="color:red;">Could not load data.</p>');
+             $('#currentMealPlan').html('');
+        }
+    });
+}
 
     // --- EVENT LISTENERS ---
     

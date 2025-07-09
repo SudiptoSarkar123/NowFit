@@ -131,6 +131,15 @@ class CoachController {
     }
     }
 
+    async logout(req, res) {
+        try {
+            res.clearCookie('CoachToken');
+            return res.redirect('/auth/coach/login');
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Internal Server Error' });
+        }
+    }
    
 }
 

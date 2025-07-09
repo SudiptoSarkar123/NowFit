@@ -16,22 +16,18 @@ const clientSchema = new mongoose.Schema({
     coach: { type: mongoose.Schema.Types.ObjectId, ref: 'coach', required: true },
     dateJoined: { type: Date, default: Date.now },
 
-    assignedMealPlan: [
-        {
-            mealPlanId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'MealPlan'
-            },
+   assignedMealPlan: {
+        mealPlanId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'MealPlan'
         }
-    ],
-    assignedWorkoutProgram: [
-        {
-            programId: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'WorkoutProgram'
-            }
+    },
+  assignedWorkoutProgram: [{
+        programId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'WorkoutProgram'
         }
-    ],
+    }],
 
 
 }, {

@@ -17,6 +17,7 @@ router.post('/onboarding/update-profile',CoachOnly,AuthController.updateProfile)
 router.post('/onboarding/add-client',CoachOnly,AuthController.addFirstClient);
 
 
+router.get('/logout', CoachOnly, AuthController.logout)
 
 
 module.exports = router;

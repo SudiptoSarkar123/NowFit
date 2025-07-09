@@ -351,54 +351,126 @@ class CoachController {
         }
     }
 
-    async allAssignedClientsByCoach(req,res){
+    async allProgramsForTheClient(req, res){
         try {
-            const clients = await Client.find({ coach: req.params.id }).populate('coach', 'fullName email');
-            res.status(200).json({ success: true, data: clients });
+            // --- 1. Get the SPECIFIC client's ID from the request parameters ---
+            const clientId = req.params.clientId;
+            // console.log('Fetching assignments for clientId:', clientId);
+
+            // --- 2. Use findById to get ONE client, not find() ---
+            const client = await Client.findById(clientId)
+                // --- 3. CORRECTLY POPULATE THE NESTED FIELDS ---
+                // To populate the array of workouts:
+                .populate({
+                    path: 'assignedWorkoutProgram.programId', // The path to the ObjectId you want to populate
+                    select: 'name' // Only get the 'name' field from the WorkoutProgram document
+                })
+                // To populate the single meal plan:
+                .populate({
+                    path: 'assignedMealPlan.mealPlanId', // The path to the ObjectId
+                    select: 'name' // Only get the 'name' field
+                });
+
+            // --- 4. Handle the case where the client is not found ---
+            if (!client) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Client not found.'
+                });
+            }
+
+            console.log('Found client with populated plans:', client);
+
+            // --- 5. Send a structured response containing ONLY the assignments ---
+            // Your frontend function expects an object with these two keys.
+            const assignments = {
+                assignedWorkoutProgram: client.assignedWorkoutProgram,
+                assignedMealPlan: client.assignedMealPlan
+            };
+
+            res.status(200).json({
+                success: true,
+                data: assignments // Send the extracted assignment object
+            });
+
         } catch (error) {
-            console.log(error);
-            res.status(500).json({ error: 'Internal Server Error' });
+            console.error('Error fetching client assignments:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Internal Server Error'
+            });
         }
-    }
+    };
 
-    
-    async  assignProgramToClient(req, res) {
-    try {
-        const clientId = req.params.id;
-        const templateId = req.body.templateId;
+
+    async assignProgramToClient(req, res) {
+        console.log('assignProgramToClient');
+      try {
+        const { clientId, type } = req.params; // Get both client ID and type from the URL
+        const { templateId } = req.body;
+
+        // 1. --- Initial Validations ---
+        if (!templateId) {
+            return res.status(400).json({ success: false, message: 'Template ID is required.' });
+        }
+        
         const client = await Client.findById(clientId);
-
         if (!client) {
-            return res.status(404).json({ error: 'Client not found' });
+            return res.status(404).json({ success: false, message: 'Client not found.' });
         }
 
-        if (req.params.endpoint === 'assign-program') {
-            // Prevent duplicates
-            const alreadyAssigned = client.assignedWorkoutProgram.some(p => p.programId.toString() === templateId);
-            if (!alreadyAssigned) {
-                client.assignedWorkoutProgram.push({ programId: templateId });
-                await client.save();
+        // 2. --- Routing Logic based on the 'type' parameter ---
+
+        // ===================================
+        // IF a Workout Program is being assigned
+        // ===================================
+        if (type === 'assign-program') {
+            const programTemplate = await WorkoutProgram.findById(templateId);
+            if (!programTemplate) {
+                return res.status(404).json({ success: false, message: 'Workout program template not found.' });
             }
 
-            res.status(200).json({ success: true, message: 'Program assigned successfully.' });
-
-        } else if (req.params.endpoint === 'assign-meal-plan') {
-            const alreadyAssigned = client.assignedMealPlan.some(p => p.mealPlanId.toString() === templateId);
-            if (!alreadyAssigned) {
-                client.assignedMealPlan.push({ mealPlanId: templateId });
-                await client.save();
+            // Prevent adding the same program twice
+            const isAlreadyAssigned = client.assignedWorkoutProgram.some(p => p.programId.equals(templateId));
+            if (isAlreadyAssigned) {
+                return res.status(400).json({ success: false, message: 'This program is already assigned to the client.' });
             }
 
-            res.status(200).json({ success: true, message: 'Meal plan assigned successfully.' });
-        } else {
-            res.status(400).json({ error: 'Invalid endpoint' });
+            // Push to the array
+            client.assignedWorkoutProgram.push({ programId: templateId });
+            await client.save();
+            
+            return res.status(200).json({ success: true, message: 'Workout program assigned successfully.' });
+        } 
+        
+        // ===================================
+        // ELSE IF a Meal Plan is being assigned
+        // ===================================
+        else if (type === 'assign-meal-plan') {
+            const mealPlanTemplate = await MealPlan.findById(templateId);
+            if (!mealPlanTemplate) {
+                 return res.status(404).json({ success: false, message: 'Meal plan template not found.' });
+            }
+
+            // Set the single object (this replaces any existing plan)
+            client.assignedMealPlan = { mealPlanId: templateId };
+            await client.save();
+            
+            return res.status(200).json({ success: true, message: 'Meal plan assigned successfully.' });
+        }
+        
+        // ===================================
+        // ELSE, the 'type' in the URL is invalid
+        // ===================================
+        else {
+            return res.status(400).json({ success: false, message: 'Invalid assignment type specified in URL.' });
         }
 
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.error('Error in assignment:', error);
+        res.status(500).json({ success: false, message: 'Internal Server Error' });
     }
-}
+    }
 
 
 

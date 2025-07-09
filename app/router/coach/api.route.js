@@ -34,9 +34,11 @@ router.post('/meal-plans', CoachOnly, ApiController.addMealPlan)
 router.get('/meal-plans', CoachOnly, ApiController.allMealPlanByCoach)
 
 // /coach/clients/${clientId}/assignments
-router.get('/clients/:id/assignments', CoachOnly, ApiController.allAssignedClientsByCoach)
+router.get('/clients/:clientId/assignments', CoachOnly, ApiController.allProgramsForTheClient)
 // url: `/coach/clients/${selectedClientId}/${endpoint}`,
-router.post('/clients/:id/:endpoint', CoachOnly, ApiController.assignProgramToClient)
+router.post('/clients/:clientId/:type', CoachOnly, ApiController.assignProgramToClient)
+
+
 
 
     module.exports = router;
