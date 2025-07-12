@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs'); // Corrected typo: bcrypt
 
 
-const assignedMealSchema = new mongoose.Schema({
-    recipeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Recipe' },
-    recipeName: String,
-    calories: Number,
-}, { _id: false });
 
 const clientSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
@@ -28,6 +23,12 @@ const clientSchema = new mongoose.Schema({
             ref: 'WorkoutProgram'
         }
     }],
+    dailyHabits: {
+        habitId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'DailyHabits'
+        }
+    },
 
 
 }, {

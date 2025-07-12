@@ -332,6 +332,47 @@ class AdminController {
         }
     }
 
+    async addEnquiry(req, res) {
+        try {
+            
+            const { fullName, email, contactNumber, clientCount, howHeard, optionalMessage } = req.body;
+
+        
+            if (!fullName || !email) {
+                return res.status(400).json({ message: 'Full name and email are required fields.' });
+            }
+
+         
+            const newEnquiry = new Enquiry({
+                fullName,
+                email,
+                contactNumber: contactNumber || null, // Ensure empty strings become null
+                clientCount: clientCount || null,
+                howHeard: howHeard || null,
+                optionalMessage: optionalMessage || null
+            });
+
+        
+            const savedEnquiry = await newEnquiry.save();
+
+           
+            res.status(201).json({ 
+                message: 'Enquiry submitted successfully!', 
+                enquiry: savedEnquiry 
+            });
+
+        } catch (error) {
+            console.error('Error adding enquiry:', error); // Log the full error for debugging
+
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({ message: 'Validation failed. Please check your data.', details: error.errors });
+            }
+
+            
+            res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
+        }
+    }
+
     async markEnquiryAsContacted(req, res) {
         try {
             const enquiryId = req.body.id;
@@ -485,27 +526,29 @@ class AdminController {
 
 
 
-    async allTransactionsByFillter(req, res) {
-        try {
-            const { startDate, endDate, coachId } = req.query;
-            const filter = {};
+    // async allTransactionsByFillter(req, res) {
+    //     try {
+    //         const { startDate, endDate, coachId } = req.query;
+    //         const filter = {};
 
-            if (startDate) filter.createdAt = { ...filter.createdAt, $gte: new Date(startDate) };
-            if (endDate) filter.createdAt = { ...filter.createdAt, $lte: new Date(endDate) };
-            if (coachId) filter.coach = coachId;
+    //         if (startDate) filter.createdAt = { ...filter.createdAt, $gte: new Date(startDate) };
+    //         if (endDate) filter.createdAt = { ...filter.createdAt, $lte: new Date(endDate) };
+    //         if (coachId) filter.coach = coachId;
 
-            // Populate client and coach for display
-            const transactions = await Transaction.find(filter)
-                .populate('client')
-                .populate('coach')
-                .sort({ createdAt: -1 });
-            console.log('Transactions:', transactions);
-            res.json({ success: true, data: transactions });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ success: false, error: 'Internal Server Error' });
-        }
-    }
+    //         // Populate client and coach for display
+    //         const transactions = await Transaction.find(filter)
+    //             .populate('client')
+    //             .populate('coach')
+    //             .sort({ createdAt: -1 });
+    //         console.log('Transactions:', transactions);
+    //         res.json({ success: true, data: transactions });
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ success: false, error: 'Internal Server Error' });
+    //     }
+    // }
+
+  
 }
 
 module.exports = new AdminController();

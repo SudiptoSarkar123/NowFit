@@ -12,6 +12,8 @@ router.get('/recipe-management',CoachOnly,StaticController.recipeMgtPg)
 router.get('/create-program',CoachOnly,StaticController.createProgramPg)
 router.get('/assign-program',CoachOnly,StaticController.assignProgramPg)
 router.get('/create-mealPlan',CoachOnly,StaticController.createMealPlanPg)
+router.get('/client-details/:id',CoachOnly,StaticController.clientDetailsPg)
+router.get('/assign-habits',CoachOnly,StaticController.addHabitsPg)
 
 
 

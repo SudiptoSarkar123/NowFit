@@ -144,6 +144,29 @@
             background-color: var(--primary-color);
             color: white;
         }
+
+        /* Add this to your <style> tag at the top */
+
+        .summary-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            /* Two equal columns */
+            align-items: center;
+            gap: 25px;
+            margin: 20px 0;
+        }
+
+        .totals-bar {
+            grid-template-columns: repeat(2, 1fr);
+            /* Adjust totals to be a 2x2 grid */
+            margin: 0;
+        }
+
+        .chart-container {
+            max-width: 200px;
+            /* Constrain the chart size */
+            margin: 0 auto;
+        }
     </style>
 </head>
 
@@ -167,13 +190,21 @@
                                                 id="planDescription"></div>
 
                                         <!-- Live Totals Bar -->
-                                        <div class="totals-bar">
-                                            <div><span>Calories (kcal)</span><strong id="total-calories">0</strong>
+                                        <div class="summary-container">
+                                            <!-- Live Totals Bar -->
+                                            <div class="totals-bar">
+                                                <div><span>Calories (kcal)</span><strong id="total-calories">0</strong>
+                                                </div>
+                                                <div><span>Protein (g)</span><strong id="total-protein">0</strong></div>
+                                                <div><span>Carbs (g)</span><strong id="total-carbs">0</strong></div>
+                                                <div><span>Fats (g)</span><strong id="total-fats">0</strong></div>
                                             </div>
-                                            <div><span>Protein (g)</span><strong id="total-protein">0</strong></div>
-                                            <div><span>Carbs (g)</span><strong id="total-carbs">0</strong></div>
-                                            <div><span>Fats (g)</span><strong id="total-fats">0</strong></div>
+                                            <!-- Canvas element where the chart will be drawn -->
+                                            <div class="chart-container">
+                                                <canvas id="macroChart"></canvas>
+                                            </div>
                                         </div>
+
 
                                         <!-- Meal Slots -->
                                         <div class="meal-slot" data-meal-type="breakfast">
@@ -220,11 +251,67 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+
     <script>
         $(document).ready(function () {
             let allRecipes = []; // Cache for the recipe library
+            let macroChart; // Variable to hold our chart instance
 
+            // --- CHART INITIALIZATION ---
+            function initializeChart() {
+                const ctx = document.getElementById('macroChart').getContext('2d');
+                macroChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Protein', 'Carbs', 'Fats'],
+                        datasets: [{
+                            data: [0, 0, 0], // Start with all zeros
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.7)', // Teal for Protein
+                                'rgba(255, 206, 86, 0.7)', // Yellow for Carbs
+                                'rgba(255, 99, 132, 0.7)'  // Red for Fats
+                            ],
+                            borderColor: [
+                                'rgba(75, 192, 192, 1)',
+                                'rgba(255, 206, 86, 1)',
+                                'rgba(255, 99, 132, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom', // Move labels to the bottom
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    // Show percentage on hover
+                                    label: function (context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                            const percentage = total > 0 ? (context.parsed / total * 100).toFixed(1) : 0;
+                                            label += `${context.raw}g (${percentage}%)`;
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
             // --- LIBRARY FUNCTIONS ---
             function loadRecipeLibrary() {
                 $.get('/coach/recipes', { search: $('#searchRecipeInput').val() }, function (res) {
@@ -299,6 +386,24 @@
                 $('#total-protein').text(Math.round(protein));
                 $('#total-carbs').text(Math.round(carbs));
                 $('#total-fats').text(Math.round(fats));
+
+                if (macroChart) {
+                    // If all macros are 0, show a placeholder state to avoid a blank chart
+                    const totalMacros = protein + carbs + fats;
+                    if (totalMacros === 0) {
+                        macroChart.data.datasets[0].data = [1, 1, 1]; // Use small equal values for placeholder
+                        macroChart.data.datasets[0].backgroundColor = ['#e5e7eb', '#e5e7eb', '#e5e7eb']; // Gray placeholder
+                    } else {
+                        macroChart.data.datasets[0].data = [protein, carbs, fats];
+                        macroChart.data.datasets[0].backgroundColor = [
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(255, 99, 132, 0.7)'
+                        ];
+                    }
+                    macroChart.update(); // Redraw the chart with new data
+                }
+
             }
 
             // --- EVENT LISTENERS ---
@@ -384,19 +489,21 @@
                             }, 1500);
                         } else { alert('Error: ' + (res.message || 'Could not save plan.')); }
                     },
-                    error: function (xhr) { 
+                    error: function (xhr) {
                         const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
                         Swal.fire({
-                            icon:'error',
-                            title:'Oops...',
-                            text:errorMsg
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: errorMsg
                         })
-                     }
+                    }
                 });
             });
 
             // --- INITIAL LOAD ---
+            initializeChart();
             loadRecipeLibrary();
+            updateTotals();
         });
     </script>
 </body>

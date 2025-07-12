@@ -150,6 +150,7 @@
                 <strong>Client Count:</strong> <span>${enquiry.clientCount || 'N/A'}</span>
                 <strong>How Heard:</strong> <span>${enquiry.howHeard || 'N/A'}</span>
                 <strong>Received:</strong> <span>${new Date(enquiry.receivedAt).toLocaleString()}</span>
+                <strong>Message:</strong> <span><i>${enquiry.optionalMessage || 'N/A'}</i></span>
             </div>`;
             modalBody.html(detailsHtml);
             showModal();

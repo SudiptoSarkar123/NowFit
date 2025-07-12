@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- The title will be dynamic based on the active tab -->
+    <title>Habit Management - NOWFit</title>
+    <!-- All necessary CSS and Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css"> <!-- Your main stylesheet -->
+    <link rel="stylesheet" href="/css/coach.css">
+    <style>
+        /* CSS for the tabbed interface */
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+        .tab-link {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        .tab-link:hover { color: var(--text-heading); }
+        .tab-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+
+        /* CSS for the habit grid and cards */
+        .habit-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        .habit-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            transition: border-color 0.2s ease;
+        }
+        .habit-card.is-assigned {
+            border-color: var(--secondary-color);
+        }
+        .habit-card-body { padding: 20px; }
+        .habit-card h4 { margin: 0 0 10px 0; color: var(--text-heading); }
+        .habit-card p { margin: 0; color: var(--text-secondary); font-size: 0.9rem; }
+        .habit-card-footer {
+            padding: 15px 20px;
+            background-color: rgba(0,0,0,0.1);
+            border-top: 1px solid var(--border-color);
+            text-align: right;
+        }
+        .habit-card .action-btn { margin-left: 10px; }
+
+        /* CSS for assignment mode */
+        .assign-checkbox {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        #assignHabitGrid .habit-card-footer { display: none; } /* No footer in assign mode */
+        #assignTab .form-group { max-width: 400px; margin-bottom: 25px; }
+        #assignHabitsBtn { margin-top: 25px; }
+
+    </style>
+</head>
+<body>
+<div class="dashboard-container">
+    <%- include('../layouts/coach/sideBar') %>
+    <div class="content-wrapper">
+        <%- include('../layouts/coach/header') %>
+        <main class="main-content">
+            <div class="card full-width-card">
+                <div class="card-header">
+                    <h3>Habit Management</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Tab Navigation -->
+                    <div class="tab-nav">
+                        <button class="tab-link active" data-tab="libraryTab">My Library</button>
+                        <button class="tab-link" data-tab="assignTab">Assign to Client</button>
+                    </div>
+
+                    <!-- TAB 1: Library Management -->
+                    <div class="tab-content active" id="libraryTab">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p>Create and manage your library of reusable daily habits.</p>
+                            <button class="btn-primary" id="addNewHabitBtn"><i class="fa-solid fa-plus"></i> Add New Habit</button>
+                        </div>
+                        <div class="habit-grid" id="habitGridContainer">
+                            <p>Loading your habits...</p>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Assign to Client -->
+                    <div class="tab-content" id="assignTab">
+                        <p>Select a client to view and update their assigned daily habits.</p>
+                        <div class="form-group">
+                            <label for="clientSelect">Select a Client</label>
+                            <select id="clientSelect" class="form-control">
+                                <option value="">-- Please select a client --</option>
+                                <!-- Client options will be dynamically loaded here -->
+                            </select>
+                        </div>
+                        <div id="assignGridWrapper" style="display: none;">
+                            <div class="habit-grid" id="assignHabitGrid">
+                                <!-- Assignable habits will load here -->
+                            </div>
+                            <button class="btn-primary" id="assignHabitsBtn"><i class="fa-solid fa-check"></i> Update Assigned Habits</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ===== Add/Edit Habit Modal (No changes needed) ===== -->
+    <div class="modal-overlay" id="habitModalOverlay" style="display: none;">
+        <div class="modal" id="habitModal">
+            <div class="modal-header"><h3 id="modalTitle">Add New Habit</h3><button class="modal-close-btn" id="modalCloseBtn">×</button></div>
+            <div class="modal-body">
+                <form id="habitForm">
+                    <input type="hidden" id="habitId" name="id">
+                    <div class="form-group"><label for="habitTitle">Habit Title</label><input type="text" id="habitTitle" name="title" required placeholder="e.g., Drink 3L of Water"></div>
+                    <div class="form-group"><label for="habitDescription">Description (Optional)</label><textarea id="habitDescription" name="description" rows="3" placeholder="e.g., A short note on why this habit is important."></textarea></div>
+                    <div class="modal-footer"><button type="submit" class="btn-primary">Save Habit</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // --- Global State ---
+        let allHabitsCache = []; // Store all library habits to avoid re-fetching
+
+        // --- Selectors ---
+        const libraryGrid = $('#habitGridContainer');
+        const assignGrid = $('#assignHabitGrid');
+        const clientSelect = $('#clientSelect');
+        const assignWrapper = $('#assignGridWrapper');
+
+        // --- Tab Switching Logic ---
+        $('.tab-link').on('click', function() {
+            const tabId = $(this).data('tab');
+            $('.tab-link').removeClass('active');
+            $(this).addClass('active');
+            $('.tab-content').removeClass('active');
+            $('#' + tabId).addClass('active');
+        });
+
+        // --- Modal Control (No changes needed) ---
+        const modal = { /* ... your existing modal object ... */ };
+
+        // --- DATA LOADING & RENDERING ---
+        
+        // Fetch all habits from the library
+        function loadLibraryHabits() {
+            $.get('/coach/habits', function(response) {
+                if (response.success && Array.isArray(response.data)) {
+                    allHabitsCache = response.data; // Cache the data
+                    renderHabitCards(allHabitsCache, libraryGrid, 'manage'); // Render in "manage" mode
+                } else {
+                    libraryGrid.html('<p>Could not load your habit library.</p>');
+                }
+            });
+        }
+
+        // Fetch all of a coach's clients to populate the dropdown
+        function loadClients() {
+            $.get('/coach/clients', function(response) { // You need to create this route
+                if(response.success && Array.isArray(response.data)) {
+                    console.log(response)
+                    response.data.forEach(client => {
+                        clientSelect.append(`<option value="${client._id}">${client.fullName}</option>`);
+                    });
+                }
+            });
+        }
+
+        /**
+         * Renders habit cards into a specified container and mode.
+         * @param {Array} habits - The array of habit objects to render.
+         * @param {jQuery} container - The jQuery object of the grid container.
+         * @param {String} mode - 'manage' (shows edit/delete) or 'assign' (shows checkboxes).
+         * @param {Array} assignedHabitIds - An array of IDs for habits already assigned to a client (used in 'assign' mode).
+         */
+        function renderHabitCards(habits, container, mode, assignedHabitIds = []) {
+            container.empty();
+            if (habits.length === 0) {
+                container.html('<p>No habits found in your library. Add one to get started!</p>');
+                return;
+            }
+            habits.forEach(habit => {
+                const isAssigned = assignedHabitIds.includes(habit._id);
+                let actionsHtml = '';
+
+                if (mode === 'manage') {
+                    actionsHtml = `
+                        <div class="habit-card-footer">
+                            <button class="action-btn edit-btn" title="Edit"><i class="fa-solid fa-pencil"></i></button>
+                            <button class="action-btn delete-btn" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                        </div>`;
+                } else if (mode === 'assign') {
+                    actionsHtml = `<input type="checkbox" class="assign-checkbox" data-habit-id="${habit._id}" ${isAssigned ? 'checked' : ''}>`;
+                }
+
+                const cardHtml = `
+                    <div class="habit-card ${isAssigned && mode === 'assign' ? 'is-assigned' : ''}" data-habit-id="${habit._id}">
+                        ${actionsHtml}
+                        <div class="habit-card-body">
+                            <h4>${habit.title}</h4>
+                            <p>${habit.description || 'No description provided.'}</p>
+                        </div>
+                    </div>
+                `;
+                container.append(cardHtml);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+
+        // Client dropdown change handler
+        clientSelect.on('change', function() {
+            const clientId = $(this).val();
+            if (!clientId) {
+                assignWrapper.hide();
+                return;
+            }
+
+            assignWrapper.show();
+            assignGrid.html('<p>Loading client habits...</p>');
+
+            // Fetch this specific client's assigned habits
+            $.get(`/coach/client/${clientId}/habits`, function(response) { // You need to create this route
+                if(response.success) {
+                    const assignedIds = response.dailyHabits || [];
+                    // Render the assign grid using the cached library habits
+                    renderHabitCards(allHabitsCache, assignGrid, 'assign', assignedIds);
+                }
+            });
+        });
+
+        // "Update Assigned Habits" button click
+        $('#assignHabitsBtn').on('click', function() {
+            const clientId = clientSelect.val();
+            if (!clientId) {
+                alert('Please select a client first.');
+                return;
+            }
+
+            const selectedHabitIds = [];
+            $('#assignHabitGrid .assign-checkbox:checked').each(function() {
+                selectedHabitIds.push($(this).data('habit-id'));
+            });
+
+            // AJAX call to update the client's habits
+            $.ajax({
+                url: '/coach/client/assign-habits', // You need to create this route
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ clientId: clientId, habitIds: selectedHabitIds }),
+                success: function(response) {
+                    if (response.success) {
+                        alert('Client habits updated successfully!');
+                        // Optional: re-trigger change to visually confirm
+                        clientSelect.trigger('change');
+                    } else {
+                        alert('Error: ' + (response.message || 'Could not update habits.'));
+                    }
+                },
+                error: function() { alert('A server error occurred.'); }
+            });
+        });
+
+        // Your existing "Add/Edit/Delete" and form submission logic goes here...
+        // ...It is mostly unchanged, just make sure selectors target the right grid
+        $('#addNewHabitBtn').on('click', function() { /* Your existing code */ });
+        libraryGrid.on('click', '.action-btn', function() { /* Your existing code */ });
+        $('#habitForm').on('submit', function(e) { /* Your existing code, ensure loadLibraryHabits() is called on success */ });
+
+        // --- INITIAL PAGE LOAD ---
+        loadLibraryHabits();
+        loadClients();
+    });
+    </script>
+</body>
+</html>

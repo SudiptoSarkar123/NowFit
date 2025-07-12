@@ -29,6 +29,7 @@ router.get('/library/:id/block', AdminDashController.deleteWorkout)
 
 
 router.get('/enquiries', AdminDashController.allEnquiries);
+router.post('/enquiries/add', AdminDashController.addEnquiry);
 router.post('/enquiries/update', AdminDashController.markEnquiryAsContacted);
 router.post('/enquiries/delete', AdminDashController.deleteEnquiry);
 
@@ -41,6 +42,6 @@ router.get('/recipes',AdminsOnly,AdminDashController.allRecipes)
 router.get('/recipes/:id',AdminsOnly,AdminDashController.getRecipeById)
 
 
-router.get('/transactions',AdminDashController.allTransactionsByFillter)
+// router.get('/transactions',AdminDashController.allTransactionsByFillter)
 
 module.exports = router

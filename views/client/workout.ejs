@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - NOWFit</title>
+    <!-- Google Fonts & Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    <style>
+        /* --- CORE DESIGN SYSTEM (Consistent with Landing Page) --- */
+        :root {
+            --primary-color: #6366f1;
+            --primary-light: rgba(99, 102, 241, 0.15);
+            --secondary-color: #14b8a6;
+            --dark-bg: #0f172a;      /* Main background */
+            --light-bg: #1e293b;     /* Sidebar, Header, Cards */
+            --card-bg: #3341551c;   /* Subtle card background */
+            --border-color: #334155;
+            --text-heading: #f1f5f9;
+            --text-primary: #cbd5e1;
+            --text-secondary: #94a3b8;
+            --white: #ffffff;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --sidebar-width: 260px;
+        }
+
+        /* --- BASE & RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text-primary);
+        }
+        a { text-decoration: none; color: var(--primary-color); }
+        h1, h2, h3, h4 { color: var(--text-heading); font-weight: 600; }
+        h1 { font-size: 1.8rem; }
+        h2 { font-size: 1.5rem; }
+        h3 { font-size: 1.2rem; }
+        hr { border: none; height: 1px; background-color: var(--border-color); margin: 20px 0; }
+
+        /* --- LAYOUT --- */
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--light-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100%;
+            z-index: 1000;
+            transition: transform 0.3s ease-in-out;
+        }
+        .content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin-left: var(--sidebar-width);
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        /* --- SIDEBAR STYLING --- */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .sidebar-header .logo { font-size: 2rem; color: var(--primary-color); margin-right: 15px; }
+        .sidebar-nav { list-style: none; }
+        .sidebar-nav li a {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 5px;
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .sidebar-nav li a .icon { width: 35px; font-size: 1.1rem; }
+        .sidebar-nav li a:hover {
+            background-color: var(--card-bg);
+            color: var(--text-heading);
+        }
+        .sidebar-nav li a.active {
+            background-color: var(--primary-color);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        /* --- HEADER STYLING --- */
+        .header {
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 900;
+        }
+        .header-left, .header-right { display: flex; align-items: center; gap: 20px; }
+        #menu-toggle {
+            display: none; /* Hidden on desktop */
+            background: none; border: none; color: var(--text-heading); font-size: 1.5rem; cursor: pointer;
+        }
+        .header-icon-btn {
+            background: none; border: none; color: var(--text-secondary); font-size: 1.3rem; cursor: pointer;
+            transition: color 0.2s;
+        }
+        .header-icon-btn:hover { color: var(--white); }
+        .user-profile img {
+            width: 40px; height: 40px; border-radius: 50%; object-fit: cover; cursor: pointer;
+            border: 2px solid var(--primary-color);
+        }
+
+        /* --- CONTENT & VIEW STYLING --- */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content-view { display: none; animation: fadeIn 0.4s ease-out; }
+        .content-view.active { display: block; }
+        
+        /* --- REUSABLE COMPONENTS: CARDS, FORMS, BUTTONS --- */
+        .card {
+            background-color: var(--light-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .card-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
+        .card-body { padding: 20px; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .btn {
+            display: inline-block; padding: 10px 24px; border-radius: 8px; font-weight: 600;
+            transition: all 0.3s ease; text-align: center; border: none; cursor: pointer;
+        }
+        .btn-primary { background-color: var(--primary-color); color: var(--white); }
+        .btn-primary:hover { background-color: #4f46e5; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 8px; color: var(--text-secondary); }
+        .form-group input {
+            width: 100%; padding: 12px; border: 1px solid var(--border-color); background-color: var(--dark-bg);
+            border-radius: 8px; font-size: 1rem; color: var(--text-heading);
+        }
+        .form-group input:disabled { background-color: var(--card-bg); cursor: not-allowed; }
+        .profile-edit-form { max-width: 600px; }
+
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(calc(-1 * var(--sidebar-width))); }
+            .dashboard-container.sidebar-open .sidebar { transform: translateX(0); }
+            .dashboard-container.sidebar-open .mobile-overlay { display: block; }
+            .content-wrapper { margin-left: 0; }
+            #menu-toggle { display: block; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- ======================= CLIENT SIDEBAR ======================= -->
+        <%- include('../layouts/client/sideBar') %>
+        
+        <div class="mobile-overlay"></div>
+
+        <div class="content-wrapper">
+            <!-- ======================= CLIENT HEADER ======================= -->
+           <%- include('../layouts/client/header') %>
+
+            <!-- ======================= MAIN CONTENT AREA ======================= -->
+            <main class="main-content" id="mainContentArea">
+              
+                <!-- VIEW 2: My Workout (Hidden by default) -->
+                <div class="content-view" id="workoutView">
+                    <div class="card">
+                        <div class="card-header"><h3>Today's Workout: Leg Day</h3></div>
+                        <div class="card-body">
+                            <p>Here you would list exercises, sets, reps, and include video links. The content would be loaded dynamically from the server.</p>
+                            <!-- e.g. <ul><li>Squats: 3 sets of 8-10 reps</li>...</ul> -->
+                            <h2>Loading Workout...</h2>
+                        </div>
+                    </div>
+                </div>
+                
+
+            </main>
+        </div>
+    </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$(document).ready(function() {
+    
+    // --- Responsive Sidebar Toggle ---
+    $('#menu-toggle, .mobile-overlay').on('click', function() {
+        $('.dashboard-container').toggleClass('sidebar-open');
+    });
+
+    // --- Master View-Loading Function ---
+    function loadView(viewName) {
+        if (!viewName) return;
+        
+        const viewContainer = $(`#${viewName}View`);
+        if(viewContainer.length === 0) {
+            console.error(`View container #${viewName}View not found.`);
+            return;
+        }
+        
+        // Hide all other views and show the target one
+        $('.content-view').removeClass('active');
+        viewContainer.addClass('active');
+        
+        // Update header title
+        let newTitle = viewName.charAt(0).toUpperCase() + viewName.slice(1);
+        if (viewName === 'meal-plan') newTitle = 'Meal Plan';
+        $('#pageTitle').text(newTitle);
+
+        // This is where you would fetch data for the view
+        // The placeholder HTML now provides the initial structure
+        
+        // Example of a real fetch:
+        // $.get(`/client/view/${viewName}`, function(res) {
+        //     if (res.success) {
+        //         viewContainer.html(res.html); // Simple way: backend sends pre-rendered HTML
+        //     } else {
+        //          viewContainer.html('<h2>Could not load content.</h2>');
+        //     }
+        // });
+    }
+
+    // --- Sidebar Navigation Handler ---
+    $('.sidebar-nav .nav-link').on('click', function(e) {
+        e.preventDefault();
+        
+        // Update active link state
+        $('.sidebar-nav .nav-link').removeClass('active');
+        $(this).addClass('active');
+        
+        const viewToLoad = $(this).data('view');
+        loadView(viewToLoad);
+
+        // Close sidebar on mobile after clicking a link
+        if ($(window).width() <= 992) {
+            $('.dashboard-container').removeClass('sidebar-open');
+        }
+    });
+
+    // --- Profile & Avatar Update Logic ---
+    $('#profileAvatar').on('click', () => $('#avatarUploadInput').click());
+
+    $('#avatarUploadInput').on('change', function() {
+        if (!this.files || !this.files[0]) return;
+        const formData = new FormData();
+        formData.append('avatar', this.files[0]);
+
+        // Simulated success for demo
+        const reader = new FileReader();
+        reader.onload = (e) => $('#profileAvatar').attr('src', e.target.result);
+        reader.readAsDataURL(this.files[0]);
+        alert('Avatar updated! (Demo)');
+    });
+
+    $('#profileEditForm').on('submit', function(e) {
+        e.preventDefault();
+        alert('Profile saved! (Demo)');
+    });
+
+    // --- Initial Load ---
+    // Fetch basic profile info to populate the static elements
+    function loadInitialProfileData() {
+        // In a real app, this comes from an API
+        const profileData = {
+            fullName: 'Jane Doe',
+            email: 'jane.doe@example.com',
+            avatarUrl: 'https://randomuser.me/api/portraits/women/22.jpg'
+        };
+        $('#profileAvatar').attr('src', profileData.avatarUrl);
+        $('#fullName').val(profileData.fullName);
+        $('#email').val(profileData.email);
+        
+        // Update welcome message
+        $('.content-view#dashboardView h3').text(`Welcome Back, ${profileData.fullName.split(' ')[0]}!`);
+    }
+
+    loadInitialProfileData();
+
+});
+</script>
+</body>
+</html>

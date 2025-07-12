@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOWFit - Coach Portal</title>
+    
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <!-- Styles are now included directly in the file -->
+    <style>
+        /* --- CORE DESIGN VARIABLES --- */
+        :root {
+            --primary-color: #4f46e5;
+            --primary-dark: #4338ca;
+            --light-bg: #f3f4f6;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --card-bg: #ffffff;
+            --white: #ffffff;
+            --border-color: #e5e7eb;
+            --error-color: #ef4444;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- BODY & LAYOUT --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* --- AUTHENTICATION CARD --- */
+        .flow-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        .flow-header {
+            text-align: center;
+            padding: 40px 40px 20px;
+        }
+        .flow-header .logo {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        .flow-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .flow-header p {
+            color: var(--text-light);
+        }
+        .flow-body {
+            padding: 30px 40px 40px;
+        }
+
+        /* --- FORM ELEMENTS --- */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        /* --- BUTTON & LINKS --- */
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .text-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .text-link a {
+            color: var(--primary-color);
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .text-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- ERROR MESSAGE --- */
+        #errorMessage {
+            color: var(--error-color);
+            background-color: #fee2e2;
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: none; /* Hidden by default */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flow-card">
+        <div id="loginPage" class="active">
+            <div class="flow-header">
+                <div class="logo"><i class="fa-solid fa-dumbbell"></i></div>
+                <h1>Welcome Back, Coach!</h1>
+                <p>Log in to your NOWFit Portal.</p>
+            </div>
+            <div class="flow-body">
+                <div id="errorMessage"></div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="loginButton">Log In</button>
+                    <div class="text-link"><a href="/forgot-password">Forgot Password?</a></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault(); 
+                
+                const loginButton = $('#loginButton');
+                const errorMessageDiv = $('#errorMessage');
+
+                // Disable button and hide old errors
+                loginButton.prop('disabled', true).text('Logging In...');
+                errorMessageDiv.hide();
+
+                const loginData = {
+                    email: $('#email').val(),
+                    password: $('#password').val()
+                };
+
+                $.ajax({
+                    url: '/auth/client/login', 
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(loginData),
+                    success: function(response) {
+                        if (response.success && response.redirectUrl) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            errorMessageDiv.text('Login failed. Please check the console.').show();
+                            loginButton.prop('disabled', false).text('Log In');
+                        }
+                    },
+                    error: function(xhr) {
+                        const errorMessage = xhr.responseJSON?.message || 'An unknown login error occurred.';
+                        errorMessageDiv.text(errorMessage).show();
+                        loginButton.prop('disabled', false).text('Log In');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

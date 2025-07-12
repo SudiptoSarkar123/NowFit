@@ -11,7 +11,7 @@
 
         <!-- Trainer (Coach) Management -->
         <li class="<%- title.includes('Trainer') || title.includes('Coach') ? 'active' : '' %>">
-            <a href="/admin/trainer-management"><i class="fa-solid fa-user-tie icon"></i> <span>Trainer Management</span></a>
+            <a href="/admin/trainer-management"><i class="fa-solid fa-user-tie icon"></i> <span>Coach Management</span></a>
         </li>
 
         <!-- Client Management -->
@@ -44,25 +44,29 @@
             <a href="/admin/enquiry-management"><i class="fa-solid fa-headset icon"></i> <span>Enquiry Management</span></a>
         </li>
         
-        <!-- Transaction Management -->
+        <!-- Transaction Management
         <li class="<%- title.includes('Transaction') ? 'active' : '' %>">
             <a href="/admin/transaction-management"><i class="fa-solid fa-money-bill-transfer icon"></i> <span>Transaction Mgt.</span></a>
-        </li>
+        </li> -->
 
 
-        <!-- CMS Management -->
+        <!-- CMS Management
         <li class="<%- title.includes('CMS') ? 'active' : '' %>">
             <a href="/admin/cms-management"><i class="fa-solid fa-file-alt icon"></i> <span>CMS Management</span></a>
-        </li>
+        </li> -->
         
-        <!-- Role & Permission Management -->
+        <!-- Role & Permission Management
         <li class="<%- title.includes('Role') ? 'active' : '' %>">
             <a href="/admin/role-management"><i class="fa-solid fa-user-shield icon"></i> <span>Role Management</span></a>
-        </li>
+        </li> -->
 
         <!-- Settings -->
         <li class="<%- title.includes('Settings') ? 'active' : '' %>">
-            <a href="/admin/settings"><i class="fa-solid fa-gear icon"></i> <span>Settings</span></a>
+            <a href="#"><i class="fa-solid fa-gear icon"></i> <span>Settings</span></a>
+        </li>
+        <!-- logout -->
+         <li>
+            <a href="/auth/admin/logout"><i class="fa-solid fa-sign-out-alt icon"></i> <span>Logout</span></a>
         </li>
     </ul>
 </nav>

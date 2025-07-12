@@ -8,7 +8,7 @@ const { sendMail } = require('../../helper/emailSender');
 class CoachController {
     async login(req, res) {
         try {
-            console.log('login');
+            // console.log('login');
             const { email, password } = req.body;
             if(!email || !password) {
                 return res.status(400).json({ message: 'All fields are required' });

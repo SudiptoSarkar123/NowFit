@@ -115,6 +115,29 @@ class StaticController {
     }
   }
 
+  async clientDetailsPg(req,res){
+    try {
+      console.log(req.query);
+      return res.render('coach/clientDetails',{title:'Client Details'})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error:'Internal Server Error'
+        })
+    }
+  }
+
+  async addHabitsPg(req,res){
+    try {
+      return res.render('coach/addHabits',{title:'Assign Habits'})
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            error:'Internal Server Error'
+        })
+    }
+  }
+
 }
 
 module.exports = new StaticController();

@@ -53,6 +53,15 @@ const coachAuthRoutes = require('./app/router/coach/auth.route');
 const coachDashRoutes = require('./app/router/coach/static.route');
 const coachApiRoutes = require('./app/router/coach/api.route')
 
+const clientAuthRoutes = require('./app/router/client/auth.route');
+const clientApiRoutes = require('./app/router/client/api.route')
+const clientDashRoutes = require('./app/router/client/static.route');
+
+
+const publicRoute = require('./app/router/public/static.route');
+
+
+app.use('/', publicRoute);
 app.use('/admin', adminDashRoutes);
 app.use('/auth/admin', adminAuthRoutes);
 app.use('/api/admin',adminApiRoutes)
@@ -60,6 +69,11 @@ app.use('/api/admin',adminApiRoutes)
 app.use('/coach', coachDashRoutes);
 app.use('/auth/coach', coachAuthRoutes);
 app.use('/coach',coachApiRoutes)
+
+app.use('/client', clientDashRoutes);
+app.use('/auth/client', clientAuthRoutes);
+app.use('/api/client',clientApiRoutes)
+
 
 // Start server
 app.listen(3000, () => {

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - NOWFit</title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/client.css">
+    <style>
+        /* Your existing dashboard styles are perfect here */
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/client/sideBar') %> <!-- Using client-specific sidebar -->
+            <div class="content-wrapper">
+                <%- include('../layouts/client/header') %> <!-- Using client-specific header -->
+                    <main class="main-content">
+                        <div class="dashboard-header">
+                            <h1 id="welcomeMessage">Loading...</h1>
+                            <p>Here is your focus for today.</p>
+                        </div>
+
+                        <!-- Welcome Header - Static structure, dynamic text -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div>
+                                <h3 id="welcomeMessage">Welcome!</h3>
+                                <p class="text-secondary">Loading your current stats...</p>
+                            </div>
+                            <div class="text-end" id="statusBadgeContainer">
+                                <!-- Status badge will be inserted here -->
+                            </div>
+                        </div>
+
+                        <div class="grid-container" style="grid-template-columns: 2fr 1fr; align-items: flex-start;">
+
+                            <!-- Left Column: Workouts & Coach -->
+                            <div style="display: flex; flex-direction: column; gap: 30px;">
+                                <!-- Coach Card -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>Your Coach</h4>
+                                    </div>
+                                    <div class="card-body" id="coachCardBody">
+                                        <p class="text-secondary">Loading coach details...</p>
+                                    </div>
+                                </div>
+
+                                <!-- All Assigned Workouts Card -->
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h4>Your Workout Programs</h4>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-group" id="workoutList">
+                                            <p class="text-secondary">Loading your programs...</p>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column: Meal Plan & Calories Chart -->
+                            <div class="card" id="nutritionCard">
+                                <div class="card-header">
+                                    <h4>Nutrition Plan</h4>
+                                </div>
+                                <div class="card-body text-center" id="nutritionCardBody">
+                                    <p class="text-secondary">Loading nutrition data...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Supporting CSS (No Changes Needed) -->
+
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+
+            /**
+             * Main function to fetch and populate all dashboard data.
+             */
+            function loadDashboardData() {
+                $.ajax({
+                    url: '/api/client/dashboard-data',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.success && response.data) {
+                            const client = response.data;
+                            populateHeader(client);
+                            populateCoachCard(client.coach);
+                            populateWorkoutList(client.assignedWorkoutProgram);
+                            populateNutritionCard(client.assignedMealPlan);
+                        } else {
+                            handleError();
+                        }
+                    },
+                    error: function () {
+                        handleError();
+                    }
+                });
+            }
+
+            /**
+             * Populates the header and status badge.
+             */
+            function populateHeader(client) {
+                $('#welcomeMessage').text(`Welcome Back, ${client.fullName.split(' ')[0]}!`);
+
+                const statusClass = client.status === 'active' ? 'badge-success' : 'badge-warning';
+                const statusBadge = `<span class="badge ${statusClass}">${client.status}</span>`;
+                $('#statusBadgeContainer').html(statusBadge).prev('p').text("Here’s your plan to crush your goals.");
+            }
+
+            /**
+             * Populates the coach information card.
+             */
+            function populateCoachCard(coach) {
+                if (!coach) {
+                    $('#coachCardBody').html('<p class="text-secondary">No coach assigned.</p>');
+                    return;
+                }
+                const coachHtml = `
+            <div class="d-flex align-items-center gap-3">
+                <img src="${coach.avatarUrl}" alt="Coach Avatar" style="width: 50px; height: 50px; border-radius: 50%;">
+                <div>
+                    <h5 class="m-0">${coach.fullName}</h5>
+                    <a href="#">Send a Message</a>
+                </div>
+            </div>`;
+                $('#coachCardBody').html(coachHtml);
+            }
+
+            /**
+             * Populates the list of assigned workout programs.
+             */
+            function populateWorkoutList(programs) {
+                const list = $('#workoutList');
+                list.empty(); // Clear "loading" message
+
+                if (!programs || programs.length === 0) {
+                    list.html('<p class="text-secondary">No workout programs have been assigned yet.</p>');
+                    return;
+                }
+
+                programs.forEach(program => {
+                    const itemHtml = `
+                <li class="list-group-item">
+                    <div>
+                        <h5>${program.programId.name}</h5>
+                        <p class="text-secondary">${program.programId.description}</p>
+                    </div>
+                    <a href="/workout" class="btn btn-primary btn-sm">View Program</a>
+                </li>`;
+                    list.append(itemHtml);
+                });
+            }
+
+            /**
+             * Populates the nutrition card and initializes the chart.
+             */
+            function populateNutritionCard(mealPlan) {
+                const body = $('#nutritionCardBody');
+                body.empty();
+
+                if (!mealPlan.mealPlanId) {
+                    body.html('<p class="text-secondary">No meal plan assigned yet.</p>');
+                    return;
+                }
+
+                const planHtml = `
+            <h5>${mealPlan.mealPlanId.name}</h5>
+            <p class="text-secondary mb-4">Daily Caloric Goal: <strong>${mealPlan.mealPlanId.nutrition.calories} kcal</strong></p>
+            <canvas id="caloriesChart"></canvas>
+            <a href="/meal-plan" class="btn btn-primary mt-4">View Full Meal Plan</a>`;
+                body.html(planHtml);
+
+                initializeChart(mealPlan.mealPlanId.caloriesBreakdown);
+            }
+
+            /**
+             * Renders the Chart.js doughnut chart.
+             */
+            function initializeChart(caloriesData) {
+                const ctx = document.getElementById('caloriesChart').getContext('2d');
+                const proteinCalories = caloriesData.protein * 4;
+                const carbsCalories = caloriesData.carbs * 4;
+                const fatCalories = caloriesData.fat * 9;
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Protein', 'Carbohydrates', 'Fat'],
+                        datasets: [{
+                            label: 'Calories from',
+                            data: [proteinCalories, carbsCalories, fatCalories],
+                            backgroundColor: ['rgba(99, 102, 241, 0.8)', 'rgba(20, 184, 166, 0.8)', 'rgba(245, 158, 11, 0.8)'],
+                            borderColor: ['#6366f1', '#14b8a6', '#f59e0b'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: { /* ... (same chart options from previous answer) ... */ }
+                });
+            }
+
+            /**
+             * Shows error messages if the AJAX call fails.
+             */
+            function handleError() {
+                $('#welcomeMessage').text('Could not load data');
+                $('#coachCardBody').html('<p class="text-danger">Error loading coach details.</p>');
+                $('#workoutList').html('<p class="text-danger">Error loading workout programs.</p>');
+                $('#nutritionCardBody').html('<p class="text-danger">Error loading nutrition data.</p>');
+            }
+
+            // --- INITIAL LOAD ---
+            loadDashboardData();
+        });
+    </script>
+</body>
+
+</html>

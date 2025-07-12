@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Reuse your sub-schemas from client.js for consistency
 const assignedExerciseSchema = new mongoose.Schema({
     exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Exercise' },
     name: String,

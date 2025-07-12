@@ -7,9 +7,9 @@ const ApiController = require('../../controller/coach/api.controller');
 
 router.get('/clients', CoachOnly, ApiController.allClientsForTheCoach)
 router.post('/clients/add', CoachOnly, ApiController.addMyClient)
-// router.get('/clients/:id/status', CoachOnly,StaticController.blockClient)
-// router.post('/clients/update/:id', CoachOnly,StaticController.updateClient
-
+router.get('/client/:id', CoachOnly, ApiController.getClientById)
+router.post('/clients/:clientId/unassign-meal-plan',CoachOnly,ApiController.unassignMealPlan)
+router.post('/clients/:clientId/unassign-workout',CoachOnly,ApiController.unassignProgram)
 
 router.get('/categories', CoachOnly, ApiController.allCategoriesForTheCoach)
 router.post('/categories/addOrUpdate', CoachOnly, ApiController.addOrUpdateCategory)
@@ -26,9 +26,6 @@ router.get('/recipes/:id', CoachOnly, ApiController.getRecipeById)
 
 router.post('/workout-programs', CoachOnly, ApiController.addProgram)
 router.get('/workout-programs', CoachOnly, ApiController.allProgramsByCoach)
-// router.get('/programs/:id',CoachOnly,ApiController.getProgramById)
-// router.post('/programs/update/:id',CoachOnly,ApiController.updateProgram)
-// router.post('/programs/delete/:id',CoachOnly,ApiController.deleteProgram)
 
 router.post('/meal-plans', CoachOnly, ApiController.addMealPlan)
 router.get('/meal-plans', CoachOnly, ApiController.allMealPlanByCoach)
@@ -37,6 +34,16 @@ router.get('/meal-plans', CoachOnly, ApiController.allMealPlanByCoach)
 router.get('/clients/:clientId/assignments', CoachOnly, ApiController.allProgramsForTheClient)
 // url: `/coach/clients/${selectedClientId}/${endpoint}`,
 router.post('/clients/:clientId/:type', CoachOnly, ApiController.assignProgramToClient)
+
+
+
+router.get('/habits', CoachOnly, ApiController.allHabits)
+router.post('/habits', CoachOnly, ApiController.addEditHabit)
+ // Fetch this specific client's assigned habits
+            // $.get(`/coach/client/${clientId}/habits`, function(response) { // You need to create this route
+            //     if(response.success) {
+
+router.get('/client/:clientId/habits', CoachOnly, ApiController.allHabitsByClient)
 
 
 

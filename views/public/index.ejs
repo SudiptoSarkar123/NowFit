@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOWFit - The Ultimate Platform for Fitness Coaches</title>
+
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/publicSite.css">
+   
+</head>
+
+<body>
+    <!-- ======================= HEADER ======================= -->
+    <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="#" class="logo">NOWFit</a>
+                <ul class="nav-links">
+                    <li><a href="#about">About Us</a></li>
+                    <li><a href="#coaches">For Coaches</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                    <li><a href="auth/coach/login" class="nav-login">Coach Login</a></li>
+                </ul>
+                <div class="menu-toggle"><i class="fa-solid fa-bars"></i></div>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+      <!-- ======================= HERO SECTION (with Video Background) ======================= -->
+<section class="hero" id="home">
+    <!-- The Video Background -->
+    <video playsinline autoplay muted loop id="hero-video">
+        <source src="../../uploads/videos/banarVideo2.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- The Content on Top of the Video -->
+    <div class="hero-content">
+        <h1>The All-In-One OS for Modern Fitness Coaches</h1>
+        <p>Stop juggling apps. Manage clients, build programs, take payments, and grow your coaching empire, all from one place.</p>
+        <a href="#contact" class="btn btn-primary">Book a Free Demo</a>
+    </div>
+</section>
+
+        <!-- ======================= SERVICES ("Why Us") ======================= -->
+        <section id="about">
+            <div class="container" style="text-align: center;">
+                <div class="scroll-reveal">
+                    <span class="section-pill">Why NOWFit?</span>
+                    <h2>Save Time, Get Better Results</h2>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card scroll-reveal" style="transition-delay: 100ms;">
+                        <div class="icon-wrapper"><i class="fa-solid fa-bolt"></i></div>
+                        <h3>Streamline Your Workflow</h3>
+                        <p>Automate check-ins, program delivery, and client onboarding to free up hours every week.</p>
+                    </div>
+                    <div class="service-card scroll-reveal" style="transition-delay: 200ms;">
+                        <div class="icon-wrapper"><i class="fa-solid fa-users"></i></div>
+                        <h3>Enhance Client Engagement</h3>
+                        <p>Keep clients motivated with in-app messaging, progress tracking, and community features.</p>
+                    </div>
+                    <div class="service-card scroll-reveal" style="transition-delay: 300ms;">
+                        <div class="icon-wrapper"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <h3>Grow Your Revenue</h3>
+                        <p>Create and sell tiered packages with our integrated, secure payment system.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= OUR APP SECTION ======================= -->
+        <section id="app-features">
+            <div class="container">
+                <div class="feature scroll-reveal">
+                    <div class="feature-image">
+                        <img src="https://images.pexels.com/photos/949126/pexels-photo-949126.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                            alt="App Screenshot">
+                    </div>
+                    <div class="feature-content">
+                        <span class="section-pill">The Client Experience</span>
+                        <h2>A Seamless App Your Clients Will Love</h2>
+                        <ul>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Easy access to workout
+                                plans, meal guides, and video tutorials.</li>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Syncs with Apple Health,
+                                Google Fit, and popular wearables.</li>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Log progress photos,
+                                measurements, and track daily habits.</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-primary" style="margin-top: 20px;">Learn More</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= OUR COACHES SECTION ======================= -->
+        <section id="coaches">
+            <div class="container">
+                <div class="feature reverse scroll-reveal">
+                    <div class="feature-content">
+                        <span class="section-pill">For The Professionals</span>
+                        <h2>Powerful Tools for Serious Coaches</h2>
+                        <ul>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Build custom workout and
+                                nutrition programs in minutes with our template library.</li>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Manage all client
+                                communication from a single, unified dashboard.</li>
+                            <li><span class="icon"><i class="fa-solid fa-check"></i></span> Customize the app with your
+                                own branding, logo, and colors.</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary" style="margin-top: 20px;">Explore Coach Features</a>
+                    </div>
+                    <div class="feature-image">
+                        <img src="https://images.pexels.com/photos/4164761/pexels-photo-4164761.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+                            alt="Coach Dashboard">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= TESTIMONIALS SECTION ======================= -->
+        <section id="testimonials" style="background-color: var(--dark-bg);">
+            <div class="container" style="text-align: center;">
+                <div class="scroll-reveal">
+                    <span class="section-pill">Don't Just Take Our Word</span>
+                    <h2>Trusted by Leading Coaches</h2>
+                </div>
+                <div class="testimonial-grid">
+                    <div class="testimonial-card scroll-reveal" style="transition-delay: 100ms;">
+                        <p>"NOWFit has cut my admin time in half. It's a true game-changer for my online coaching
+                            business. My only regret is not finding it sooner."</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Coach Avatar">
+                            <div>
+                                <h4>Jessica Miller</h4>
+                                <div class="rating">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card scroll-reveal" style="transition-delay: 200ms;">
+                        <p>"My clients are more engaged than ever before. The app is intuitive, looks professional, and
+                            keeps them on track towards their goals."</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/men/75.jpg" alt="Coach Avatar">
+                            <div>
+                                <h4>Mark Chen</h4>
+                                <div class="rating">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card scroll-reveal" style="transition-delay: 300ms;">
+                        <p>"The best investment I've made for my business. The onboarding and payment systems are
+                            seamless and have boosted my conversion rate."</p>
+                        <div class="testimonial-author">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Coach Avatar">
+                            <div>
+                                <h4>Samantha Lee</h4>
+                                <div class="rating">
+                                    <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i
+                                        class="fa-solid fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======================= CONTACT FORM SECTION (Updated to match Schema) ======================= -->
+        <section id="contact">
+            <div class="container" style="text-align: center;">
+                <div class="scroll-reveal">
+                    <span class="section-pill">Get Started</span>
+                    <h2>Ready to Elevate Your Coaching Business?</h2>
+                    <p>Fill out the form below for a free, no-obligation demo and consultation.</p>
+                </div>
+                <div class="contact-form-wrapper scroll-reveal">
+                    <form id="enquiry-form" class="contact-form">
+                        <!-- The form-message div was here -->
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactNumber">Contact Number (Optional)</label>
+                            <input type="tel" id="contactNumber" name="contactNumber">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientCount">How many clients do you currently coach?</label>
+                            <select id="clientCount" name="clientCount">
+                                <option value="">Please select an option</option>
+                                <option value="Just Starting (0-15)">Just Starting (0-15)</option>
+                                <option value="Growing (15-50)">Growing (15-50)</option>
+                                <option value="Established (50+)">Established (50+)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="howHeard">How did you hear about us? (Optional)</label>
+                            <input type="text" id="howHeard" name="howHeard">
+                        </div>
+                        <div class="form-group">
+                            <label for="optionalMessage">Anything else you want to add? (Optional)</label>
+                            <textarea id="optionalMessage" name="optionalMessage" rows="4"></textarea>
+                        </div>
+                        <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%;">Submit
+                            Enquiry</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ======================= FOOTER ======================= -->
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <h4>NOWFit</h4>
+                    <p>The complete software solution for personal trainers and fitness coaches.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#coaches">For Coaches</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#">Terms & Conditions</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4>Contact</h4>
+                    <p>contact@nowfit.com</p>
+                    <p>+1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 NOWFit. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+    <!-- YOUR CUSTOM SCRIPT -->
+    <script>
+        $(document).ready(function() { // Ensures the DOM is ready before scripts run
+
+            // --- MOBILE NAVIGATION ---
+            $('.menu-toggle').on('click', function() {
+                $('.nav-links').toggleClass('active');
+            });
+            $('.nav-links li a').on('click', function() {
+                if ($('.nav-links').hasClass('active')) {
+                    $('.nav-links').removeClass('active');
+                }
+            });
+
+            // --- SCROLL REVEAL ANIMATION ---
+            const revealElements = document.querySelectorAll('.scroll-reveal');
+            const revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+            revealElements.forEach(el => revealObserver.observe(el));
+
+
+            // --- JQUERY AJAX FORM SUBMISSION WITH SWEETALERT ---
+            $('#enquiry-form').on('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+
+                const form = $(this);
+                const submitBtn = $('#submit-btn');
+                const originalBtnHtml = submitBtn.html();
+
+                // 1. Show loading state using jQuery methods
+                submitBtn.html('Submitting... <i class="fa-solid fa-spinner fa-spin"></i>');
+                submitBtn.prop('disabled', true);
+
+                // 2. Collect form data and convert to a plain JavaScript object
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+
+                // 3. Make the API call using jQuery's $.ajax
+                $.ajax({
+                    url: 'api/admin/enquiries/add', // Your backend route
+                    type: 'POST',
+                    contentType: 'application/json', // Let the server know we're sending JSON
+                    data: JSON.stringify(data),      // Convert the JS object to a JSON string
+                    dataType: 'json',                // Expect a JSON response from the server
+
+                    success: function(response) {
+                        // --- SUCCESS ---
+                        // Show a success popup with SweetAlert2
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: "Your enquiry has been sent. We'll be in touch shortly.",
+                            timer: 2500, // Auto-close after 2.5 seconds
+                            showConfirmButton: false
+                        });
+                        form[0].reset(); // Reset the form fields
+                    },
+
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        // --- FAILURE ---
+                        console.error("AJAX Error:", textStatus, errorThrown);
+                        // Show an error popup with SweetAlert2
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong. Please check your details and try again.',
+                        });
+                    },
+                    
+                    complete: function() {
+                        // 4. This runs after success or error
+                        // Restore the button to its original state
+                        submitBtn.html(originalBtnHtml);
+                        submitBtn.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

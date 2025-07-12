@@ -34,6 +34,40 @@
         .library-item:hover { background-color: var(--primary-light); }
         
         .builder-actions { margin-top: auto; padding: 20px; border-top: 1px solid var(--border-color); }
+
+       
+        
+         .btn-grad {background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5  51%, #ff0000  100%)}
+         .btn-grad-secondary {background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5  51%, #15ff00  100%)}
+         .btn-grad , .btn-grad-secondary {
+           
+            padding: 10px 15px;
+            text-align: center;
+            text-transform: uppercase;
+            transition: 0.5s;
+            background-size: 200% auto;
+            color: white;            
+            box-shadow: 0 0 20px #eee;
+            border-radius: 100%;
+            display: block;
+            border: transparent;
+            font-size: 14px;
+          }
+
+          .btn-grad:hover {
+            background-position: right center; /* change the direction of the change here */
+            color: #fff;
+            text-decoration: none;
+          }
+          .btn-grad-secondary:hover {
+            background-position: right center; /* change the direction of the change here */
+            color: #fff;
+            text-decoration: none;
+          }
+         
+
+          
+          
     </style>
 </head>
 
@@ -115,7 +149,7 @@ $(document).ready(function() {
             const itemHtml = `
                 <li class="library-item" data-id="${ex._id}" data-name="${ex.name}">
                     <span>${ex.name}</span>
-                    <button class="add-exercise-btn" title="Add to workout">+</button>
+                    <button class="add-exercise-btn btn-grad-secondary " title="Add to workout">+</button>
                 </li>
             `;
             list.append(itemHtml);
@@ -132,7 +166,7 @@ $(document).ready(function() {
             <div class="workout-day" data-day-id="${dayCounter}">
                 <div class="workout-day-header">
                     <input type="text" class="day-name" value="Day ${dayCounter}: Untitled">
-                    <button type="button" class="remove-day-btn" title="Remove day">×</button>
+                    <button type="button" class="remove-day-btn btn-grad " title="Remove day">×</button>
                 </div>
                 <div class="added-exercises-list">
                     <!-- Added exercises will go here -->
@@ -149,7 +183,7 @@ $(document).ready(function() {
                 <input type="text" class="sets-input" placeholder="Sets">
                 <input type="text" class="reps-input" placeholder="Reps">
                 <input type="text" class="rest-input" placeholder="Rest">
-                <button type="button" class="remove-exercise-btn" title="Remove exercise">×</button>
+                <button type="button" class="remove-exercise-btn .btn-grad" title="Remove exercise">×</button>
             </div>
         `;
         dayElement.find('.added-exercises-list').append(exerciseHtml);

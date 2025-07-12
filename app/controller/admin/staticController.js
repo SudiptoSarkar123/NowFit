@@ -23,7 +23,7 @@ class StaticController {
 
     async coachMgtPg(req,res){
         try {
-            res.render('admin/coachMgt',{title:'Trainer Management'})
+            res.render('admin/coachMgt',{title:'Coach Management'})
         } catch (error) {
             console.error(error);
             return res.status(500).json({

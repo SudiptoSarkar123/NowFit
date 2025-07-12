@@ -1,0 +1,32 @@
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <i class="fa-solid fa-dumbbell logo"></i>
+        <h2>NOWFit</h2>
+    </div>
+    <ul class="sidebar-nav">
+        <!-- Dashboard Link -->
+        <li class="nav-link <%- title.includes('Dashboard') ? 'active' : '' %>">
+            <a  href="/client/dashboard">
+                <i class="fa-solid fa-house icon"></i> <span>Dashboard</span>
+            </a>
+        </li>
+
+     
+
+        <hr>
+
+        <!-- My Profile Link -->
+        <li class="nav-link <%- title.includes('Profile') ? 'active' : '' %>">
+            <a  href="/profile">
+                <i class="fa-solid fa-user-cog icon"></i> <span>My Profile</span>
+            </a>
+        </li>
+
+        <!-- Logout Link -->
+        <li>
+            <a href="/client/logout">
+                <i class="fa-solid fa-sign-out-alt icon"></i> <span>Logout</span>
+            </a>
+        </li>
+    </ul>
+</nav>
