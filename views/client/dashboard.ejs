@@ -95,6 +95,7 @@
                     dataType: 'json',
                     success: function (response) {
                         if (response.success && response.data) {
+                            console.log(response.data);
                             const client = response.data;
                             populateHeader(client);
                             populateCoachCard(client.coach);
@@ -159,7 +160,7 @@
                         <h5>${program.programId.name}</h5>
                         <p class="text-secondary">${program.programId.description}</p>
                     </div>
-                    <a href="/workout" class="btn btn-primary btn-sm">View Program</a>
+                    <a href="/workout/${program.programId._id}" class="btn btn-primary btn-sm">View Program</a>
                 </li>`;
                     list.append(itemHtml);
                 });
@@ -178,13 +179,13 @@
                 }
 
                 const planHtml = `
-            <h5>${mealPlan.mealPlanId.name}</h5>
-            <p class="text-secondary mb-4">Daily Caloric Goal: <strong>${mealPlan.mealPlanId.nutrition.calories} kcal</strong></p>
+            <h5>${mealPlan.mealPlanId.name}</h5>    
+            <p class="text-secondary mb-4">Daily Caloric Goal: <strong>${mealPlan.mealPlanId.totals.totalCalories} kcal</strong></p>
             <canvas id="caloriesChart"></canvas>
-            <a href="/meal-plan" class="btn btn-primary mt-4">View Full Meal Plan</a>`;
+            <a href="/client/meal-plan/${mealPlan.mealPlanId._id}" class="btn btn-primary mt-4">View Full Meal Plan</a>`;
                 body.html(planHtml);
 
-                initializeChart(mealPlan.mealPlanId.caloriesBreakdown);
+                initializeChart(mealPlan.mealPlanId.totals);
             }
 
             /**
@@ -192,9 +193,9 @@
              */
             function initializeChart(caloriesData) {
                 const ctx = document.getElementById('caloriesChart').getContext('2d');
-                const proteinCalories = caloriesData.protein * 4;
-                const carbsCalories = caloriesData.carbs * 4;
-                const fatCalories = caloriesData.fat * 9;
+                const proteinCalories = caloriesData.totalProtein * 4;
+                const carbsCalories = caloriesData.totalCarbs * 4;
+                const fatCalories = caloriesData.totalFats * 9;
 
                 new Chart(ctx, {
                     type: 'doughnut',

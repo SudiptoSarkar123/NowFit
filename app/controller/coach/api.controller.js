@@ -418,11 +418,11 @@ class CoachController {
             if (!name || !dailyPlan) {
                 return res.status(400).json({ success: false, message: 'Name and dailyPlan are required.' });
             }
+            console.log(totals)
 
             const newMealPlan = new MealPlan({
                 name,
                 dailyPlan,
-                totals: totals || {}, // Optional, can be calculated later
                 description: description || '',
                 createdBy: req.user._id
             });
@@ -604,30 +604,32 @@ class CoachController {
         }
     }
 
-    async allHabitsByClient(req, res) {
-        try {
-            const { clientId } = req.params;
-            if (!clientId) {
-                return res.status(400).json({ success: false, message: 'Client Id is required' });
-            }
-            const client = await Client.findById(clientId)
-                .populate('dailyHabits.habitId')
-                .select('fullName email dailyHabits');
+    // async allHabitsByClient(req, res) {
+    //     try {
+    //         const { clientId } = req.params;
+    //         if (!clientId) {
+    //             return res.status(400).json({ success: false, message: 'Client Id is required' });
+    //         }
+    //         const client = await Client.findById(clientId)
+    //             .populate('dailyHabits.habitId')
+    //             .select('fullName email dailyHabits');
 
-            if (!client) {
-                return res.status(404).json({ message: 'Client not found' });
-            }
+    //         if (!client) {
+    //             return res.status(404).json({ message: 'Client not found' });
+    //         }
 
-            console.log('habits', habits);
-            res.status(200).json({
-                message: 'Client habit fetched successfully',
-                clientHabit: client.dailyHabits,
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ success: false, message: 'Internal server error' });
-        }
-    }
+    //         console.log('habits', habits);
+    //         res.status(200).json({
+    //             message: 'Client habit fetched successfully',
+    //             clientHabit: client.dailyHabits,
+    //         });
+    //     } catch (error) {
+    //         console.error(error);
+    //         res.status(500).json({ success: false, message: 'Internal server error' });
+    //     }
+    // }
+
+    
 
 
 

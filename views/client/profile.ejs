@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - NOWFit</title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/client.css">
+    <style>
+        .profile-grid {
+            display: none;
+            grid-template-columns: 1fr 2fr;
+            gap: 40px;
+        }
+
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--border-color);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+
+            .profile-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/client/sideBar') %> <!-- Using client-specific sidebar -->
+            <div class="content-wrapper">
+                <%- include('../layouts/client/header') %> <!-- Using client-specific header -->
+                    <main class="main-content">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>My Profile</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="profile-container" class="profile-grid">
+                                    <!-- Left Column: Avatar -->
+                                    <div class="profile-avatar-section text-center">
+                                        <img src="/images/placeholder-avatar.png" alt="Profile Picture"
+                                            id="profilePictureImg" class="profile-picture">
+                                        <button id="changePictureBtn" class="btn btn-secondary mt-3">Change
+                                            Picture</button>
+                                        <input type="file" id="avatarUploadInput" name="avatar" accept="image/*"
+                                            style="display: none;">
+                                        <p class="text-secondary mt-2"><small>Click picture or button to change</small>
+                                        </p>
+                                    </div>
+
+                                    <!-- Right Column: Details Form -->
+                                    <div class="profile-details-section">
+                                        <form id="profileForm">
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label for="fullName">Full Name</label>
+                                                    <input type="text" id="fullName" name="fullName" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="email">Email Address</label>
+                                                    <input type="email" id="email" name="email" disabled>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="phoneNumber">Phone Number</label>
+                                                    <input type="tel" id="phoneNumber" name="phoneNumber">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="gender">Gender</label>
+                                                    <select id="gender" name="gender">
+                                                        <option value="">-- Select --</option>
+                                                        <option value="male">Male</option>
+                                                        <option value="female">Female</option>
+                                                        <option value="other">Other</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="age">Age</label>
+                                                    <input type="number" id="age" name="age">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="height">Height (cm)</label>
+                                                    <input type="number" id="height" name="height">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="weight">Weight (kg)</label>
+                                                    <input type="number" id="weight" name="weight">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="address">Address</label>
+                                                <input type="text" id="address" name="address">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="city">City</label>
+                                                <input type="text" id="city" name="city">
+                                            </div>
+
+                                            <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div id="loading-state" class="text-center p-5">
+                                    <p class="text-secondary">Loading your profile...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            // --- Initial Data Loading ---
+            function loadProfileData() {
+                $.get('/api/client/dashboard-data', function (response) {
+                    if (response.success && response.data) {
+                        const client = response.data;
+                        
+                        $('#fullName').val(client.fullName);
+                        $('#email').val(client.email);
+                        $('#phoneNumber').val(client.phoneNumber);
+                        $('#gender').val(client.gender);
+                        $('#age').val(client.age);
+                        $('#height').val(client.height);
+                        $('#weight').val(client.weight);
+                        $('#address').val(client.address);
+                        $('#city').val(client.city);
+                        $('#profilePictureImg').attr('src', client.avatarUrl || 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.outsideonline.com%2Fculture%2Factive-families%2Fhow-to-read-dog-body-language-happy-aggressive%2F&psig=AOvVaw2_JUOpI-YzmovE3HwNe3uo&ust=1752413326461000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCIin48C2t44DFQAAAAAdAAAAABAE');
+
+                        // Show the content and hide loading indicator
+                        $('#loading-state').hide();
+                        $('#profile-container').css('display', 'grid');
+                    } else {
+                        $('#loading-state').html('<p class="text-danger">Could not load profile.</p>');
+                    }
+                });
+            }
+
+            // --- Event Handlers ---
+
+            // Form submission for text details
+            $('#profileForm').on('submit', function (e) {
+                e.preventDefault();
+                const formData = {
+                    fullName: $('#fullName').val(),
+                    phoneNumber: $('#phoneNumber').val(),
+                    gender: $('#gender').val(),
+                    age: $('#age').val(),
+                    height: $('#height').val(),
+                    weight: $('#weight').val(),
+                    address: $('#address').val(),
+                    city: $('#city').val(),
+                };
+
+                $.ajax({
+                    url: '/api/client/profile/update-details',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire('Success!', 'Your profile has been updated.', 'success');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error!', 'Could not update your profile.', 'error');
+                    }
+                });
+            });
+
+            // Trigger hidden file input
+            $('#changePictureBtn, #profilePictureImg').on('click', function () {
+                $('#avatarUploadInput').click();
+            });
+
+            // Handle file selection for avatar upload
+            $('#avatarUploadInput').on('change', function () {
+                if (!this.files || !this.files[0]) return;
+
+                const formData = new FormData();
+                formData.append('avatar', this.files[0]);
+
+                $.ajax({
+                    url: '/api/client/profile/update-avatar',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response.success) {
+                            // Update the image source on the page instantly
+                            $('#profilePictureImg').attr('src', response.newAvatarUrl);
+                            Swal.fire('Success!', 'Your profile picture has been changed.', 'success');
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error!', 'Failed to upload image.', 'error');
+                    }
+                });
+            });
+
+            // --- Initial Call ---
+            loadProfileData();
+        });
+    </script>
+</body>
+
+</html>

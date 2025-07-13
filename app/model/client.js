@@ -10,6 +10,14 @@ const clientSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'paused', 'inactive'], default: 'active' },
     coach: { type: mongoose.Schema.Types.ObjectId, ref: 'coach', required: true },
     dateJoined: { type: Date, default: Date.now },
+    gender: { type: String, enum: ['male', 'female', 'other'] },
+    height: { type: Number },
+    weight: { type: Number },
+    age: { type: Number },
+    address: { type: String },
+    city: { type: String },
+    avatarUrl: { type: String },
+    phoneNumber: { type: String },
 
    assignedMealPlan: {
         mealPlanId: {

@@ -20,6 +20,28 @@ class StaticController{
             })
         }
     }
+
+    async clientProfilePg(req,res) {
+        try {
+            res.render('client/profile',{title:'Client Profile'})
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                error:'Internal Server Error'
+            })
+        }
+    }
+
+    async clientMealPlanPg(req,res){
+        try {
+            res.render('client/mealPlan',{title:'Client Meal Plan'})
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                error:'Internal Server Error'
+            })
+        }
+    }
 }
 
 module.exports = new StaticController();

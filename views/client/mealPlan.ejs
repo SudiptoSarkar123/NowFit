@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Meal Plan - NOWFit</title>
+    <!-- All necessary libraries and CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/client.css">
+    <style>
+        .meal-plan-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .summary-panel {
+            position: sticky;
+            top: 100px;
+            /* Sticks to top on scroll */
+        }
+
+        .meal-list-panel .card-header {
+            padding-bottom: 10px;
+        }
+
+        /* Summary Card Styles */
+        #macroChartContainer {
+            max-width: 250px;
+            margin: 20px auto;
+        }
+
+        .nutrition-totals {
+            text-align: center;
+        }
+
+        .nutrition-totals h2 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .nutrition-totals p {
+            margin: 0;
+        }
+
+        .macros-split {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        /* Accordion Styles for Recipes */
+        .accordion-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .accordion-header i {
+            transition: transform 0.3s;
+        }
+
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            padding: 0 20px 20px 20px;
+            display: none;
+        }
+
+        .recipe-card {
+            border: 1px solid #f3f4f6;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        .recipe-card h5 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/client/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/client/header') %>
+                    <main class="main-content">
+
+                        <div class="meal-plan-layout">
+                            <!-- ================== LEFT PANEL: Summary & Chart ================== -->
+                            <div class="summary-panel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3 id="planName">Loading Meal Plan...</h3>
+                                    </div>
+                                    <div class="card-body nutrition-totals">
+                                        <p>Total Daily Intake</p>
+                                        <h2 id="totalCalories">0</h2>
+                                        <div id="macroChartContainer">
+                                            <canvas id="macroChart"></canvas>
+                                        </div>
+                                        <div class="macros-split">
+                                            <div><strong id="totalProtein">0</strong>g<br><small>Protein</small></div>
+                                            <div><strong id="totalCarbs">0</strong>g<br><small>Carbs</small></div>
+                                            <div><strong id="totalFats">0</strong>g<br><small>Fats</small></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ================== RIGHT PANEL: Meal & Recipe List ================== -->
+                            <div class="meal-list-panel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3>Daily Meals</h3>
+                                    </div>
+                                    <div class="card-body" id="mealsAccordionContainer">
+                                        <!-- Accordion items will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let macroChart;
+
+            // Get Meal Plan ID from the URL, e.g., /meal-plan/687249e75355d067b55de6c0
+            const pathSegments = window.location.pathname.split('/');
+            const mealPlanId = pathSegments[pathSegments.length - 1];
+
+            function initializeChart() {
+                const ctx = document.getElementById('macroChart').getContext('2d');
+                macroChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Protein', 'Carbs', 'Fats'],
+                        datasets: [{
+                            data: [0, 0, 0], // Initial values
+                            backgroundColor: ['#4caf50', '#2196f3', '#ff9800'], // Colors for the chart
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            function loadMealPlanDetails() {
+                if (!mealPlanId) {
+                    $('.main-content').html('<h2>Invalid Meal Plan ID.</h2>');
+                    return;
+                }
+                $.get(`/api/client/my-meal-plan/${mealPlanId}`, function (response) {
+                    if (response.success && response.data) {
+                        const plan = response.data;
+                        // console.log(plan)
+                        populateSummary(plan.name, plan.totals);
+                        updateChart(plan.totals);
+                        populateMealsAccordion(plan.dailyPlan);
+                    }
+                });
+            }
+
+            function populateSummary(name, totals) {
+                $('#planName').text(name);
+                if (totals) {
+                    $('#totalCalories').text(totals.totalCalories || 0);
+                    $('#totalProtein').text(totals.totalProtein || 0);
+                    $('#totalCarbs').text(totals.totalCarbs || 0);
+                    $('#totalFats').text(totals.totalFats || 0);
+                }
+            }
+
+            function updateChart(totals) {
+                if (!macroChart) { initializeChart(); }
+                if (totals) {
+                    macroChart.data.datasets[0].data = [totals.totalProtein, totals.totalCarbs, totals.totalFats];
+                    macroChart.update();
+                }
+            }
+
+            function populateMealsAccordion(dailyPlan) {
+                console.log(dailyPlan)
+                const container = $('#mealsAccordionContainer');
+                container.empty();
+                const mealOrder = ['breakfast', 'lunch', 'dinner', 'snacks'];
+
+                mealOrder.forEach(mealType => {
+                    const recipes = dailyPlan[mealType];
+                    if (recipes && recipes.length > 0) {
+                        let recipesHtml = '';
+                        recipes.forEach(recipe => {
+                            recipesHtml += `
+                        <div class="recipe-card">
+                            <h5>${recipe.name} (${recipe.nutrition.calories} kcal)</h5>
+                            <p>${recipe.instructions}</p>
+                        </div>
+                    `;
+                        });
+
+                        const accordionItem = `
+                    <div class="accordion-item">
+                        <div class="accordion-header">
+                            <span>${mealType.charAt(0).toUpperCase() + mealType.slice(1)}</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="accordion-body">${recipesHtml}</div>
+                    </div>
+                `;
+                        container.append(accordionItem);
+                    }
+                });
+            }
+
+            // --- Accordion Event Listener ---
+            $(document).on('click', '.accordion-header', function () {
+                $(this).toggleClass('active');
+                $(this).next('.accordion-body').slideToggle(300);
+            });
+
+            // --- Initial Load ---
+            initializeChart(); // Initialize chart with empty state
+            loadMealPlanDetails();
+        });
+    </script>
+</body>
+
+</html>

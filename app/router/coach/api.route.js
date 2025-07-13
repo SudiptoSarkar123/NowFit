@@ -43,7 +43,8 @@ router.post('/habits', CoachOnly, ApiController.addEditHabit)
             // $.get(`/coach/client/${clientId}/habits`, function(response) { // You need to create this route
             //     if(response.success) {
 
-router.get('/client/:clientId/habits', CoachOnly, ApiController.allHabitsByClient)
+
+
 
 
 
