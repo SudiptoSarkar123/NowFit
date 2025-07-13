@@ -82,6 +82,8 @@
     </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <script>
         $(document).ready(function () {
 
@@ -160,7 +162,7 @@
                         <h5>${program.programId.name}</h5>
                         <p class="text-secondary">${program.programId.description}</p>
                     </div>
-                    <a href="/workout/${program.programId._id}" class="btn btn-primary btn-sm">View Program</a>
+                    <a href="/client/workout-plan/${program.programId._id}" class="btn btn-primary btn-sm">View Program</a>
                 </li>`;
                     list.append(itemHtml);
                 });
@@ -171,6 +173,7 @@
              */
             function populateNutritionCard(mealPlan) {
                 const body = $('#nutritionCardBody');
+                console.log(mealPlan);
                 body.empty();
 
                 if (!mealPlan.mealPlanId) {
@@ -209,7 +212,14 @@
                             borderWidth: 1
                         }]
                     },
-                    options: { /* ... (same chart options from previous answer) ... */ }
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
                 });
             }
 

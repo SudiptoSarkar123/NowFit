@@ -42,6 +42,17 @@ class StaticController{
             })
         }
     }
+
+    async clientWorkoutPg(req,res){
+        try {
+            res.render('client/workoutPlan',{title:'Client Workout'})
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                error:'Internal Server Error'
+            })
+        }
+    }
 }
 
 module.exports = new StaticController();

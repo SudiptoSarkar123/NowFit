@@ -1,168 +1,273 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Program Builder - NOWFit</title>
     <!-- CSS & Libraries -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/coach.css">
     <style>
         /* CSS specific to the program builder */
-        .builder-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; height: calc(100vh - 150px); }
-        .program-builder, .exercise-library { background-color: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); display: flex; flex-direction: column; }
-        .builder-header, .library-header { padding: 20px; border-bottom: 1px solid var(--border-color); }
-        .builder-header h3, .library-header h3 { margin: 0; }
-        .builder-content, .library-content { padding: 20px; overflow-y: auto; }
+        .builder-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            height: calc(100vh - 150px);
+        }
+
+        .program-builder,
+        .exercise-library {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .builder-header,
+        .library-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .builder-header h3,
+        .library-header h3 {
+            margin: 0;
+        }
+
+        .builder-content,
+        .library-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
 
         /* Left Panel: Builder */
-        .program-meta .form-group { margin-bottom: 15px; }
-        .workout-day { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 20px; }
-        .workout-day-header { display: flex; justify-content: space-between; align-items: center; background: #f9fafb; padding: 15px; }
-        .workout-day-header input { border: none; background: transparent; font-size: 1.1rem; font-weight: 600; }
-        .added-exercises-list { padding: 15px; }
-        .exercise-instance { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 40px; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f3f4f6; }
-        .exercise-instance:last-child { border-bottom: none; }
-        .exercise-instance input { width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; }
+        .program-meta .form-group {
+            margin-bottom: 15px;
+        }
+
+        .workout-day {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .workout-day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f9fafb;
+            padding: 15px;
+        }
+
+        .workout-day-header input {
+            border: none;
+            background: transparent;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .added-exercises-list {
+            padding: 15px;
+        }
+
+        .exercise-instance {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr 40px;
+            gap: 10px;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .exercise-instance:last-child {
+            border-bottom: none;
+        }
+
+        .exercise-instance input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+        }
 
         /* Right Panel: Library */
-        #searchExerciseInput { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; }
-        .library-list ul { list-style: none; padding: 0; }
-        .library-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-radius: 6px; cursor: pointer; }
-        .library-item:hover { background-color: var(--primary-light); }
-        
-        .builder-actions { margin-top: auto; padding: 20px; border-top: 1px solid var(--border-color); }
+        #searchExerciseInput {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
 
-       
-        
-         .btn-grad {background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5  51%, #ff0000  100%)}
-         .btn-grad-secondary {background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5  51%, #15ff00  100%)}
-         .btn-grad , .btn-grad-secondary {
-           
+        .library-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .library-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .library-item:hover {
+            background-color: var(--primary-light);
+        }
+
+        .builder-actions {
+            margin-top: auto;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+
+
+        .btn-grad {
+            background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5 51%, #ff0000 100%)
+        }
+
+        .btn-grad-secondary {
+            background-image: linear-gradient(to right, #4F46E5 0%, #3a7bd5 51%, #15ff00 100%)
+        }
+
+        .btn-grad,
+        .btn-grad-secondary {
+
             padding: 10px 15px;
             text-align: center;
             text-transform: uppercase;
             transition: 0.5s;
             background-size: 200% auto;
-            color: white;            
+            color: white;
             box-shadow: 0 0 20px #eee;
             border-radius: 100%;
             display: block;
             border: transparent;
             font-size: 14px;
-          }
+        }
 
-          .btn-grad:hover {
-            background-position: right center; /* change the direction of the change here */
+        .btn-grad:hover {
+            background-position: right center;
+            /* change the direction of the change here */
             color: #fff;
             text-decoration: none;
-          }
-          .btn-grad-secondary:hover {
-            background-position: right center; /* change the direction of the change here */
+        }
+
+        .btn-grad-secondary:hover {
+            background-position: right center;
+            /* change the direction of the change here */
             color: #fff;
             text-decoration: none;
-          }
-         
-
-          
-          
+        }
     </style>
 </head>
 
 <body>
-<div class="dashboard-container">
-    <%- include('../layouts/coach/sideBar') %>
-    <div class="content-wrapper">
-        <%- include('../layouts/coach/header') %>
-        <main class="main-content">
-            <div class="builder-layout">
-                <!-- ================== LEFT PANEL: The Program Builder ================== -->
-                <div class="program-builder">
-                    <div class="builder-header">
-                        <h3>Create Your Workout Program</h3>
-                    </div>
-                    <div class="builder-content">
-                        <form id="programBuilderForm">
-                            <div class="program-meta">
-                                <div class="form-group"><label>Program Name</label><input type="text" id="programName" required></div>
-                                <div class="form-group"><label>Description</label><input type="text" id="programDescription"></div>
-                                <div class="form-group"><label>Duration (e.g., 4 Weeks)</label><input type="text" id="programDuration"></div>
-                            </div>
-                            <hr style="margin: 20px 0;">
-                            
-                            <h4>Workout Days</h4>
-                            <div id="workoutDaysContainer">
-                                <!-- Workout day blocks will be dynamically inserted here -->
-                            </div>
-                            <button type="button" class="btn btn-secondary" id="addDayBtn" style="margin-top: 10px;">+ Add a Day</button>
-                        </form>
-                    </div>
-                    <div class="builder-actions">
-                        <button type="button" class="btn btn-primary" id="saveProgramBtn" style="width: 100%;">Save Program Template</button>
-                    </div>
-                </div>
+    <div class="dashboard-container">
+        <%- include('../layouts/coach/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/coach/header') %>
+                    <main class="main-content">
+                        <div class="builder-layout">
+                            <!-- ================== LEFT PANEL: The Program Builder ================== -->
+                            <div class="program-builder">
+                                <div class="builder-header">
+                                    <h3>Create Your Workout Program</h3>
+                                </div>
+                                <div class="builder-content">
+                                    <form id="programBuilderForm">
+                                        <div class="program-meta">
+                                            <div class="form-group"><label>Program Name</label><input type="text"
+                                                    id="programName" required></div>
+                                            <div class="form-group"><label>Description</label><input type="text"
+                                                    id="programDescription"></div>
+                                            <div class="form-group"><label>Duration (e.g., 4 Weeks)</label><input
+                                                    type="text" id="programDuration"></div>
+                                        </div>
+                                        <hr style="margin: 20px 0;">
 
-                <!-- ================== RIGHT PANEL: The Exercise Library ================== -->
-                <div class="exercise-library">
-                    <div class="library-header">
-                        <h3>Exercise Library</h3>
-                    </div>
-                    <div class="library-content">
-                        <input type="text" id="searchExerciseInput" placeholder="Search for an exercise...">
-                        <div class="library-list">
-                            <ul id="exerciseLibraryList">
-                                <!-- Exercises will be loaded here by AJAX -->
-                            </ul>
+                                        <h4>Workout Days</h4>
+                                        <div id="workoutDaysContainer">
+                                            <!-- Workout day blocks will be dynamically inserted here -->
+                                        </div>
+                                        <button type="button" class="btn btn-secondary" id="addDayBtn"
+                                            style="margin-top: 10px;">+ Add a Day</button>
+                                    </form>
+                                </div>
+                                <div class="builder-actions">
+                                    <button type="button" class="btn btn-primary" id="saveProgramBtn"
+                                        style="width: 100%;">Save Program Template</button>
+                                </div>
+                            </div>
+
+                            <!-- ================== RIGHT PANEL: The Exercise Library ================== -->
+                            <div class="exercise-library">
+                                <div class="library-header">
+                                    <h3>Exercise Library</h3>
+                                </div>
+                                <div class="library-content">
+                                    <input type="text" id="searchExerciseInput" placeholder="Search for an exercise...">
+                                    <div class="library-list">
+                                        <ul id="exerciseLibraryList">
+                                            <!-- Exercises will be loaded here by AJAX -->
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    </main>
             </div>
-        </main>
     </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://unpkg.com/sweetalert2@11"></script>
-<script>
-$(document).ready(function() {
-    let allExercises = []; // Cache for the library
-    let dayCounter = 0; // To give unique IDs to new days
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/sweetalert2@11"></script>
+    <script>
+        $(document).ready(function () {
+            let allExercises = []; // Cache for the library
+            let dayCounter = 0; // To give unique IDs to new days
 
-    // --- LIBRARY FUNCTIONS ---
-    function loadExerciseLibrary() {
-        const searchTerm = $('#searchExerciseInput').val();
-        // GET /coach/library/exercises?search=...
-        $.get('/coach/workouts', { search: searchTerm }, function(res) {
-            if (res.success) {
-                allExercises = res.data;
-                renderLibraryList(allExercises);
+            // --- LIBRARY FUNCTIONS ---
+            function loadExerciseLibrary() {
+                const searchTerm = $('#searchExerciseInput').val();
+                // GET /coach/library/exercises?search=...
+                $.get('/coach/workouts', { search: searchTerm }, function (res) {
+                    if (res.success) {
+                        allExercises = res.data;
+                        renderLibraryList(allExercises);
+                    }
+                });
             }
-        });
-    }
 
-    function renderLibraryList(exercises) {
-        const list = $('#exerciseLibraryList');
-        list.empty();
-        exercises.forEach(ex => {
-            const itemHtml = `
+            function renderLibraryList(exercises) {
+                const list = $('#exerciseLibraryList');
+                list.empty();
+                exercises.forEach(ex => {
+                    const itemHtml = `
                 <li class="library-item" data-id="${ex._id}" data-name="${ex.name}">
                     <span>${ex.name}</span>
                     <button class="add-exercise-btn btn-grad-secondary " title="Add to workout">+</button>
                 </li>
             `;
-            list.append(itemHtml);
-        });
-    }
+                    list.append(itemHtml);
+                });
+            }
 
-    $('#searchExerciseInput').on('keyup', loadExerciseLibrary);
+            $('#searchExerciseInput').on('keyup', loadExerciseLibrary);
 
 
-    // --- BUILDER FUNCTIONS ---
-    function addWorkoutDay() {
-        dayCounter++;
-        const dayHtml = `
+            // --- BUILDER FUNCTIONS ---
+            function addWorkoutDay() {
+                dayCounter++;
+                const dayHtml = `
             <div class="workout-day" data-day-id="${dayCounter}">
                 <div class="workout-day-header">
                     <input type="text" class="day-name" value="Day ${dayCounter}: Untitled">
@@ -173,102 +278,105 @@ $(document).ready(function() {
                 </div>
             </div>
         `;
-        $('#workoutDaysContainer').append(dayHtml);
-    }
-    
-    function addExerciseToDay(dayElement, exerciseId, exerciseName) {
-        const exerciseHtml = `
+                $('#workoutDaysContainer').append(dayHtml);
+            }
+
+            function addExerciseToDay(dayElement, exerciseId, exerciseName) {
+                const exerciseHtml = `
             <div class="exercise-instance" data-exercise-id="${exerciseId}">
                 <span>${exerciseName}</span>
+                <input type="hidden" class="name" value="${exerciseName}">
                 <input type="text" class="sets-input" placeholder="Sets">
                 <input type="text" class="reps-input" placeholder="Reps">
                 <input type="text" class="rest-input" placeholder="Rest">
                 <button type="button" class="remove-exercise-btn .btn-grad" title="Remove exercise">×</button>
             </div>
         `;
-        dayElement.find('.added-exercises-list').append(exerciseHtml);
-    }
-    
-    // --- EVENT LISTENERS ---
-    $('#addDayBtn').on('click', addWorkoutDay);
-    $('#workoutDaysContainer').on('click', '.remove-day-btn', function() { $(this).closest('.workout-day').remove(); });
-    $('#workoutDaysContainer').on('click', '.remove-exercise-btn', function() { $(this).closest('.exercise-instance').remove(); });
-    
-    $('#exerciseLibraryList').on('click', '.add-exercise-btn', function() {
-        const lastDay = $('.workout-day:last');
-        if (lastDay.length === 0) {
-            alert('Please add a workout day first!');
-            return;
-        }
-        const exerciseId = $(this).parent().data('id');
-        const exerciseName = $(this).parent().data('name');
-        addExerciseToDay(lastDay, exerciseId, exerciseName);
-    });
-    
-    $('#saveProgramBtn').on('click', function() {
-        // Collect all data from the form
-        const programData = {
-            action: 'add',
-            name: $('#programName').val(),
-            description: $('#programDescription').val(),
-            duration: $('#programDuration').val(),
-            schedule: []
-        };
-        
-        $('.workout-day').each(function() {
-            const day = {
-                dayName: $(this).find('.day-name').val(),
-                exercises: []
-            };
-            $(this).find('.exercise-instance').each(function() {
-                day.exercises.push({
-                    exercise: $(this).data('exercise-id'),
-                    sets: $(this).find('.sets-input').val(),
-                    reps: $(this).find('.reps-input').val(),
-                    rest: $(this).find('.rest-input').val()
+                dayElement.find('.added-exercises-list').append(exerciseHtml);
+            }
+
+            // --- EVENT LISTENERS ---
+            $('#addDayBtn').on('click', addWorkoutDay);
+            $('#workoutDaysContainer').on('click', '.remove-day-btn', function () { $(this).closest('.workout-day').remove(); });
+            $('#workoutDaysContainer').on('click', '.remove-exercise-btn', function () { $(this).closest('.exercise-instance').remove(); });
+
+            $('#exerciseLibraryList').on('click', '.add-exercise-btn', function () {
+                const lastDay = $('.workout-day:last');
+                if (lastDay.length === 0) {
+                    alert('Please add a workout day first!');
+                    return;
+                }
+                const exerciseId = $(this).parent().data('id');
+                const exerciseName = $(this).parent().data('name');
+                addExerciseToDay(lastDay, exerciseId, exerciseName);
+            });
+
+            $('#saveProgramBtn').on('click', function () {
+                // Collect all data from the form
+                const programData = {
+                    action: 'add',
+                    name: $('#programName').val(),
+                    description: $('#programDescription').val(),
+                    duration: $('#programDuration').val(),
+                    schedule: []
+                };
+
+                $('.workout-day').each(function () {
+                    const day = {
+                        dayName: $(this).find('.day-name').val(),
+                        exercises: []
+                    };
+                    $(this).find('.exercise-instance').each(function () {
+                        day.exercises.push({
+                            exercise: $(this).data('exercise-id'),
+                            name: $(this).find('.name').val(),
+                            sets: $(this).find('.sets-input').val(),
+                            reps: $(this).find('.reps-input').val(),
+                            rest: $(this).find('.rest-input').val()
+                        });
+                    });
+                    programData.schedule.push(day);
+                });
+
+                console.log("Saving Program:", programData);
+                // POST request to /coach/workout-programs with `programData`
+                $.ajax({
+                    url: '/coach/workout-programs',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(programData),
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: res.message,
+                                showConfirmButton: false,
+                                timer: 1500
+                            })
+                            setTimeout(() => {
+                                window.location.href = '/coach/create-program';
+                            }, 1500);
+                        } else {
+                            alert('Error: ' + (res.message || 'Could not save program.'));
+                        }
+                    },
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: errorMsg
+                        })
+                    }
                 });
             });
-            programData.schedule.push(day);
-        });
-        
-        console.log("Saving Program:", programData);
-        // POST request to /coach/workout-programs with `programData`
-        $.ajax({
-            url: '/coach/workout-programs',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(programData),
-            success: function(res) {
-                if (res.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: res.message,
-                        showConfirmButton: false,
-                        timer: 1500
-                    })
-                    setTimeout(()=>{
-                        window.location.href = '/coach/create-program';
-                    },1500);
-                } else {
-                    alert('Error: ' + (res.message || 'Could not save program.'));
-                }
-            },
-            error: function(xhr) {
-                const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
-                Swal.fire({
-                    icon:'error',
-                    title:'Oops...',
-                    text:errorMsg
-                })
-            }
-        });
-    });
 
-    // --- INITIAL LOAD ---
-    loadExerciseLibrary();
-    addWorkoutDay(); // Start with one day already added
-});
-</script>
+            // --- INITIAL LOAD ---
+            loadExerciseLibrary();
+            addWorkoutDay(); // Start with one day already added
+        });
+    </script>
 </body>
+
 </html>

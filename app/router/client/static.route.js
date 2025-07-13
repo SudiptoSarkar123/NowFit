@@ -7,6 +7,7 @@ const ClientOnly = require('../../middleware/ClientOnly');
 router.get('/dashboard',ClientOnly,StaticController.clientDashboardPg)
 router.get('/profile',ClientOnly,StaticController.clientProfilePg)
 router.get('/meal-plan/:id',ClientOnly,StaticController.clientMealPlanPg)
+router.get('/workout-plan/:id',ClientOnly,StaticController.clientWorkoutPg)
 
 
 module.exports = router;

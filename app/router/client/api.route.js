@@ -11,6 +11,7 @@ router.get('/login',ClientOnly,StaticController.loginPg);
 router.post('/profile/update-avatar', ClientOnly, upload.single('avatar'), ApiController.updateAvatar)
 router.post('/profile/update-details', ClientOnly, ApiController.updateProfileDetails)
 router.get('/my-meal-plan/:id',ClientOnly,ApiController.getMyMealPlans);
+router.get('/my-workout-program/:id',ClientOnly,ApiController.getMyWorkoutPlans);
 
 
 module.exports = router;

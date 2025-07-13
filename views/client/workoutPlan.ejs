@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Workout Program - NOWFit</title>
+    <!-- CSS & Libraries -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/client.css">
+    <style>
+        .workout-layout {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+        }
+
+        .overview-panel {
+            position: sticky;
+            top: 100px;
+        }
+
+        .schedule-panel .card-header {
+            padding-bottom: 10px;
+        }
+
+        /* Overview Card Styles */
+        #programTitle {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+        }
+
+        .overview-details p {
+            margin: 5px 0;
+            font-size: 1.1rem;
+        }
+
+        #startWorkoutBtn {
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            font-size: 1.2rem;
+        }
+
+        /* Accordion for Workout Days */
+        .accordion-item {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .accordion-header i {
+            transition: transform 0.3s;
+        }
+
+        .accordion-header.active i {
+            transform: rotate(180deg);
+        }
+
+        .accordion-body {
+            padding: 0 20px 20px 20px;
+            display: none;
+        }
+
+        /* Exercise Table inside Accordion */
+        .exercise-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .exercise-table th,
+        .exercise-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .exercise-table th {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <%- include('../layouts/client/sideBar') %>
+            <div class="content-wrapper">
+                <%- include('../layouts/client/header') %>
+                    <main class="main-content">
+                        <div class="workout-layout">
+                            <!-- ================== LEFT PANEL: Program Overview ================== -->
+                            <div class="overview-panel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3>Program Overview</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 id="programTitle">Loading...</h2>
+                                        <div class="overview-details">
+                                            <p><strong>Duration:</strong> <span id="programDuration">...</span></p>
+                                            <p><strong>Current Week:</strong> <span id="programWeek">...</span></p>
+                                        </div>
+                                        <button id="startWorkoutBtn" class="btn btn-primary">Start Today's
+                                            Workout</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ================== RIGHT PANEL: Full Workout Schedule ================== -->
+                            <div class="schedule-panel">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h3>Full Schedule</h3>
+                                    </div>
+                                    <div class="card-body" id="scheduleAccordionContainer">
+                                        <!-- Workout Day Accordions will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Get the ID from the URL, e.g., /workout-program/the_assignment_id
+            const pathSegments = window.location.pathname.split('/');
+            const programAssignmentId = pathSegments[pathSegments.length - 1];
+            let todaysWorkoutUrl = ''; // To store the link for "Start Today's Workout"
+
+            function loadWorkoutDetails() {
+                if (!programAssignmentId) {
+                    $('.main-content').html('<h2>Invalid Workout Program ID.</h2>');
+                    return;
+                }
+
+                $.get(`/api/client/my-workout-program/${programAssignmentId}`, function (response) {
+                    if (response.success && response.data) {
+                        console.log(response.data);
+                        const program = response.data;
+                        populateOverview(program);
+                        populateSchedule(program.schedule);
+
+                        // Set the URL for the main action button
+                        if (program.todaysWorkoutDayId) {
+                            todaysWorkoutUrl = `/client/workout-player/${program.todaysWorkoutDayId}`;
+                        } else {
+                            $('#startWorkoutBtn').text('No Workout Today').prop('disabled', true);
+                        }
+                    }
+                });
+            }
+
+            // --- Population Functions ---
+            function populateOverview(program) {
+                $('#programTitle').text(program.programName || 'My Program');
+                $('#programDuration').text(program.duration || 'N/A');
+                $('#programWeek').text(program.currentWeek  || 'N/A');
+            }
+
+            function populateSchedule(schedule = []) {
+                const container = $('#scheduleAccordionContainer');
+                container.empty();
+
+                schedule.forEach(day => {
+                    let exercisesTableHtml =`
+                <table class="exercise-table">
+                    <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+                    <tbody>`;
+
+                    day.exercises.forEach(ex => {
+                        exercisesTableHtml += `
+                    <tr>
+                        <td>${ex.name}</td>
+                        <td>${ex.sets}</td>
+                        <td>${ex.reps}</td>
+                        <td>${ex.rest}</td>
+                    </tr>
+                `;
+                    });
+
+                    exercisesTableHtml += `</tbody></table>`;
+
+                    const accordionItem = `
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        <span>${day.dayName}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="accordion-body">${exercisesTableHtml}</div>
+                </div>
+            `;
+                    container.append(accordionItem);
+                });
+            }
+
+            // --- Accordion Event Listener ---
+            $(document).on('click', '.accordion-header', function () {
+                // Simple toggle for the clicked item
+                const body = $(this).next('.accordion-body');
+                $(this).toggleClass('active');
+                body.slideToggle(300);
+            });
+
+            // --- Action Button Listener ---
+            $('#startWorkoutBtn').on('click', function () {
+                if (todaysWorkoutUrl) {
+                    window.location.href = todaysWorkoutUrl;
+                }
+            });
+
+            // --- Initial Load ---
+            loadWorkoutDetails();
+        });
+    </script>
+</body>
+
+</html>

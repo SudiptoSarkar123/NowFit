@@ -371,7 +371,7 @@ class CoachController {
         try {
             // Destructure the required fields from the request body
             const { name, description, duration, schedule } = req.body;
-
+            // console.log(req.body);
             // Validate required fields
             if (!name || !duration || !schedule || !Array.isArray(schedule) || schedule.length === 0) {
                 return res.status(400).json({ success: false, message: 'Name, duration, and schedule are required.' });
