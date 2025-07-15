@@ -169,6 +169,7 @@
             function populateHeader(details) {
                 if (!details) return;
                 $('#clientName').text(details.fullName);
+                $('#clientAvatar').attr('src', details.avatarUrl || '/images/placeholder-avatar.png');
                 $('#clientStatusPill').text(details.status).attr('class', `status-pill status-${details.status}`);
             }
 

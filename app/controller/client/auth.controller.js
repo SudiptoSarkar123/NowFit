@@ -37,6 +37,16 @@ class AuthController {
                 res.status(500).json({ error: 'Internal server error' })
             }
         }
+
+        async logout(req, res) {
+            try {
+                res.clearCookie('ClientToken');
+                return res.redirect('/auth/client/login');
+            } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Internal Server Error' });
+            }
+        }
 }
 
 module.exports = new AuthController();

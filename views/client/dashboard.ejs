@@ -122,6 +122,7 @@
                 const statusClass = client.status === 'active' ? 'badge-success' : 'badge-warning';
                 const statusBadge = `<span class="badge ${statusClass}">${client.status}</span>`;
                 $('#statusBadgeContainer').html(statusBadge).prev('p').text("Here’s your plan to crush your goals.");
+                $('#profileAvatar').attr('src', client.avatarUrl).attr('alt', 'My profileAvatar')
             }
 
             /**
