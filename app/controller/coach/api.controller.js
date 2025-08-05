@@ -367,11 +367,11 @@ class CoachController {
         }
     }
 
-    async addProgram(req, res) {
+    async addWorkoutProgram(req, res) {
         try {
             // Destructure the required fields from the request body
             const { name, description, duration, schedule } = req.body;
-            // console.log(req.body);
+            // console.log('Schedule', schedule.exercises.forEach(exercise => console.log(exercise)));
             // Validate required fields
             if (!name || !duration || !schedule || !Array.isArray(schedule) || schedule.length === 0) {
                 return res.status(400).json({ success: false, message: 'Name, duration, and schedule are required.' });
@@ -389,6 +389,7 @@ class CoachController {
 
             await newProgram.save();
 
+            console.log('Workout program created successfully');
             return res.status(200).json({
                 success: true,
                 message: 'Workout program created successfully',

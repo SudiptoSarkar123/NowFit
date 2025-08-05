@@ -147,9 +147,10 @@
                         $('#weight').val(client.weight);
                         $('#address').val(client.address);
                         $('#city').val(client.city);
-                        $('#profilePictureImg').attr('src', client.avatarUrl || 'https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.outsideonline.com%2Fculture%2Factive-families%2Fhow-to-read-dog-body-language-happy-aggressive%2F&psig=AOvVaw2_JUOpI-YzmovE3HwNe3uo&ust=1752413326461000&source=images&cd=vfe&opi=89978449&ved=0CBAQjRxqFwoTCIin48C2t44DFQAAAAAdAAAAABAE');
+                        $('#profileAvatar').attr('src', client.avatarUrl || 'https://i.pinimg.com/736x/9e/83/75/9e837528f01cf3f42119c5aeeed1b336.jpg');
+                        $('#profilePictureImg').attr('src', client.avatarUrl || 'https://i.pinimg.com/736x/9e/83/75/9e837528f01cf3f42119c5aeeed1b336.jpg');
 
-                        // Show the content and hide loading indicator
+                        
                         $('#loading-state').hide();
                         $('#profile-container').css('display', 'grid');
                     } else {
@@ -181,11 +182,25 @@
                     data: JSON.stringify(formData),
                     success: function (response) {
                         if (response.success) {
-                            Swal.fire('Success!', 'Your profile has been updated.', 'success');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            })
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1500);
                         }
                     },
-                    error: function () {
-                        Swal.fire('Error!', 'Could not update your profile.', 'error');
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.error || 'Something went wrong';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: errorMsg
+                        })
                     }
                 });
             });
@@ -212,7 +227,16 @@
                         if (response.success) {
                             // Update the image source on the page instantly
                             $('#profilePictureImg').attr('src', response.newAvatarUrl);
-                            Swal.fire('Success!', 'Your profile picture has been changed.', 'success');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success',
+                                text: response.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 1500);
                         }
                     },
                     error: function () {

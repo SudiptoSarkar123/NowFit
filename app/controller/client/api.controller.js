@@ -137,13 +137,9 @@ class ClintApiController {
             }
 
 
-            const program = await WorkoutProgram.findById(programId)
-                .populate({
-                    path: 'schedule.exercises.exerciseId', // The nested path to the reference
-                    select: 'name mediaFile ' // Select the fields you want from the Exercise document
-                });
+            const program = await WorkoutProgram.findById(programId);
 
-            console.log('program', program);
+            // console.log('program', program.schedule[0].exercises[0]);
             if (!program) {
                 return res.status(404).json({ success: false, message: 'Workout program not found.' });
             }
@@ -166,7 +162,7 @@ class ClintApiController {
                         sets: ex.sets,
                         reps: ex.reps,
                         rest: ex.rest,
-                        mediaUrl: ex.exercise ? ex.exercise.mediaFile : null,
+                        mediaFile: ex.mediaFile || null,
                        
                     }))
                 }))

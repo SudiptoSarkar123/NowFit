@@ -242,6 +242,7 @@
                 $.get('/coach/workouts', { search: searchTerm }, function (res) {
                     if (res.success) {
                         allExercises = res.data;
+                        console.log(allExercises);
                         renderLibraryList(allExercises);
                     }
                 });
@@ -252,7 +253,7 @@
                 list.empty();
                 exercises.forEach(ex => {
                     const itemHtml = `
-                <li class="library-item" data-id="${ex._id}" data-name="${ex.name}">
+                <li class="library-item" data-id="${ex._id}" data-name="${ex.name}" data-media="${ex.mediaFile}">
                     <span>${ex.name}</span>
                     <button class="add-exercise-btn btn-grad-secondary " title="Add to workout">+</button>
                 </li>
@@ -281,11 +282,13 @@
                 $('#workoutDaysContainer').append(dayHtml);
             }
 
-            function addExerciseToDay(dayElement, exerciseId, exerciseName) {
+            function addExerciseToDay(dayElement, exerciseId, exerciseName , exerciseMedia) {
+                console.log(exerciseMedia)
                 const exerciseHtml = `
             <div class="exercise-instance" data-exercise-id="${exerciseId}">
                 <span>${exerciseName}</span>
                 <input type="hidden" class="name" value="${exerciseName}">
+                <input type="hidden" class="media" value="${exerciseMedia}">
                 <input type="text" class="sets-input" placeholder="Sets">
                 <input type="text" class="reps-input" placeholder="Reps">
                 <input type="text" class="rest-input" placeholder="Rest">
@@ -308,7 +311,9 @@
                 }
                 const exerciseId = $(this).parent().data('id');
                 const exerciseName = $(this).parent().data('name');
-                addExerciseToDay(lastDay, exerciseId, exerciseName);
+                const exerciseMedia = $(this).parent().data('media');
+                // console.log('Exercise Media:', exerciseMedia);
+                addExerciseToDay(lastDay, exerciseId, exerciseName , exerciseMedia);
             });
 
             $('#saveProgramBtn').on('click', function () {
@@ -330,11 +335,13 @@
                         day.exercises.push({
                             exercise: $(this).data('exercise-id'),
                             name: $(this).find('.name').val(),
+                            mediaFile: $(this).find('.media').val(),
                             sets: $(this).find('.sets-input').val(),
                             reps: $(this).find('.reps-input').val(),
                             rest: $(this).find('.rest-input').val()
                         });
                     });
+                    console.log(day);
                     programData.schedule.push(day);
                 });
 

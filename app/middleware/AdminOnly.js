@@ -13,10 +13,11 @@ const AdminCheck = async (req,res,next)=>{
         // console.log("token",token);
 
         const decode = jwt.verify(token,process.env.JWT_SECRET)
-
-        req.user = await Admin.findById(decode.id).select('-password') ;
-        if(!req.user){
-            return res.redirect('/auth/admin/login').json({message:'User not found...'})
+        if(decode.role !== 'admin'){
+            return res.redirect('/auth/admin/login').json({
+                status:false,
+                message:'Unauthorised: No token provided'
+            })
         }
         next();
     } catch (error) {

@@ -103,8 +103,8 @@ class AdminController {
 
     async addClient(req, res) {
         try {
-            console.log('ADD Clients');
-            console.log(req.body);
+            // console.log('ADD Clients');
+            // console.log(req.body);
             const { fullName, email, password, coach } = req.body;
             if (!fullName || !email || !password || !coach) {
                 return res.status(400).json({ error: 'All fields are required' });

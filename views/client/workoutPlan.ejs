@@ -92,6 +92,12 @@
             font-size: 0.9rem;
             color: var(--text-light);
         }
+
+        .exercise-thumbnail {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
     </style>
 </head>
 
@@ -152,7 +158,7 @@
 
                 $.get(`/api/client/my-workout-program/${programAssignmentId}`, function (response) {
                     if (response.success && response.data) {
-                        console.log(response.data);
+                        console.log('loadWorkoutDetails',response.data);
                         const program = response.data;
                         populateOverview(program);
                         populateSchedule(program.schedule);
@@ -181,13 +187,15 @@
                 schedule.forEach(day => {
                     let exercisesTableHtml =`
                 <table class="exercise-table">
-                    <thead><tr><th>Exercise</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
+                    <thead><tr><th>Exercise</th><th>Image</th><th>Sets</th><th>Reps</th><th>Rest</th></tr></thead>
                     <tbody>`;
 
                     day.exercises.forEach(ex => {
+                        console.log(ex)
                         exercisesTableHtml += `
                     <tr>
                         <td>${ex.name}</td>
+                        <td><img src="${ex.mediaFile}" class="exercise-thumbnail"></td>
                         <td>${ex.sets}</td>
                         <td>${ex.reps}</td>
                         <td>${ex.rest}</td>

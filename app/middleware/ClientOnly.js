@@ -9,7 +9,7 @@ const ClientCheck = async (req,res,next)=>{
         }
 
         const decode = jwt.verify(token,process.env.JWT_SECRET)
-        console.log(decode);
+        // console.log(decode);
         req.user = await Client.findById(decode._id).select('-password') ;
         if(!req.user)return res.status(404).json({message:'User not found...'})
         next();

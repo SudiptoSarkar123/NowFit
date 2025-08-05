@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const assignedExerciseSchema = new mongoose.Schema({
     exerciseId: { type: mongoose.Schema.Types.ObjectId, ref: 'workout' },
     name: String,
+    mediaFile: String,
     sets: String,
     reps: String,
     rest: String,

@@ -24,7 +24,7 @@ router.get('/recipes', CoachOnly, ApiController.allRecipesForTheCoach)
 router.post('/recipes', CoachOnly, ApiController.addUpdateDeleteRecipe)
 router.get('/recipes/:id', CoachOnly, ApiController.getRecipeById)
 
-router.post('/workout-programs', CoachOnly, ApiController.addProgram)
+router.post('/workout-programs', CoachOnly, ApiController.addWorkoutProgram)
 router.get('/workout-programs', CoachOnly, ApiController.allProgramsByCoach)
 
 router.post('/meal-plans', CoachOnly, ApiController.addMealPlan)
